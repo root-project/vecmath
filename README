@@ -1,0 +1,2 @@
+  The VecCoreLib project gathers VecCore-based utilities developed by the GeantV R&D, but having no GeantV dependencies. This is a temporary solution for avoiding developing only in GeantV general code usable in other areas than simulation, such as RND or fast math.
+  
