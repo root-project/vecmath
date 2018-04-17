@@ -7,3 +7,7 @@ if(DEFINED VecCore_LIBRARIES)
 #  target_link_libraries(test1 ${VecCoreLib_LIBRARIES})
 #  target_link_libraries(test2 ${VecCoreLib_LIBRARIES})
 endif()
+
+if (VECRNG)
+  add_subdirectory(rng)
+endif()

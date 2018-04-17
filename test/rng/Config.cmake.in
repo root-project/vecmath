@@ -1,0 +1,47 @@
+# - Config file for the rngtest package
+# Defines the following variables
+#   RNGTEST_FOUND        - Found the rngtest library
+#   RNGTEST_INCLUDE_DIR  - include directories for rngtest
+#   RNGTEST_LIBRARIES    - libraries to link against
+#   RNGTEST_DEFINITIONS  - some core flags used to build the rngtest library and
+#                          which need to be reused in projects using rngtest
+#   RNGTEST_INSTALL_DIR     - the top level installation path
+#   RNGTEST_EXTERNAL_INCLUDES - external include paths used
+#   RNGTEST_C_COMPILER        - the C compiler used to compile rngtest
+#   RNGTEST_CXX_COMPILER      - the CXX compiler used to compile rngtest
+
+if(NOT rngtest_FIND_QUIETLY)
+  message(STATUS
+    "Using rngtest @CONF_TYPE@ configuration at ${CMAKE_CURRENT_LIST_FILE}.")
+endif()
+
+get_filename_component(THIS_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(RNGTEST_INCLUDE_DIR "@CONF_INCLUDE_DIR@")
+set(RNGTEST_LIBRARIES "@CONF_LIBRARIES@")
+set(RNGTEST_INSTALL_DIR "@CMAKE_INSTALL_PREFIX@")
+set(RNGTEST_COMPILE_OPTIONS @RNGTEST_COMPILATION_FLAGS@)
+set(RNGTEST_CUDA_STATIC_LIBRARY "@CONF_CUDA_STATIC_LIBRARY@")
+
+set(RNGTEST_DEFINITIONS @RNGTEST_DEFINITIONS@)
+add_definitions(${RNGTEST_DEFINITIONS})
+
+# add the include directories used to compile rngtest
+set(RNGTEST_EXTERNAL_INCLUDES "@RNGTEST_EXTERNAL_INCLUDES@")
+set(RNGTEST_INCLUDE_DIRS ${RNGTEST_EXTERNAL_INCLUDES} ${RNGTEST_INCLUDE_DIR})
+
+set(RNGTEST_C_COMPILER "@CMAKE_C_COMPILER@")
+set(RNGTEST_CXX_COMPILER "@CMAKE_CXX_COMPILER@")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} @RNGTEST_COMPILATION_FLAGS@")
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} @RNGTEST_COMPILATION_FLAGS_GNU@")
+endif()
+if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang")
+    OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} @RNGTEST_COMPILATION_FLAGS_CLANG@")
+endif()
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Intel")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} @RNGTEST_COMPILATION_FLAGS_INTEL@")
+endif()
+set(RNGTEST_CUDA_ARCH "@CUDA_ARCH@")
+set(RNGTEST_FOUND TRUE)

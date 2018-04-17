@@ -18,7 +18,7 @@ if (NOT CMAKE_BUILD_TYPE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS Debug Release RelWithDebInfo)
 endif()
 
-option(VECRNG  "Enable support for VecRng")
+option(VECRNG  "Enable support for VecRng" ON)
 
 option(BUILD_BENCHMARKS "Build binaries for performance benchmarking")
 option(BUILD_TESTING    "Build test binaries and create test target")
@@ -47,12 +47,12 @@ configure_package_config_file(cmake/VecCoreLibConfig.cmake.in
 configure_file(cmake/VecCoreLibConfigVersion.cmake.in cmake/VecCoreLibConfigVersion.cmake @ONLY)
 
 install(FILES "${PROJECT_BINARY_DIR}/include/Config.h" DESTINATION ${VecCoreLib_INSTALL_INCLUDEDIR}/${PROJECT_NAME})
-install(DIRECTORY include/${PROJECT_NAME} DESTINATION ${VecCoreLib_INSTALL_INCLUDEDIR})
+#install(DIRECTORY include/${PROJECT_NAME} DESTINATION ${VecCoreLib_INSTALL_INCLUDEDIR})
 install(DIRECTORY ${PROJECT_BINARY_DIR}/cmake/
   DESTINATION ${VecCoreLib_INSTALL_CMAKEDIR} FILES_MATCHING PATTERN *.cmake)
 
 if (VECRNG)
-  install(DIRECTORY include/rng DESTINATION ${VecCore_INSTALL_INCLUDEDIR}
+  install(DIRECTORY include/rng DESTINATION ${VecCoreLib_INSTALL_INCLUDEDIR}/${PROJECT_NAME}
     PATTERN "test" EXCLUDE)
 endif()
 
