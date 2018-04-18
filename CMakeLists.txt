@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.6.0)
 
+include(cmake/RecordCmdLine.cmake)
+
 project(VecCoreLib)
 
 add_library(VecCoreLib INTERFACE)
