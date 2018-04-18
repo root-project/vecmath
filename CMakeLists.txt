@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.6.0)
 
 include(cmake/RecordCmdLine.cmake)
 
-project(VecCoreLib)
+project(VecCoreLib VERSION 0.1.0)
 
 add_library(VecCoreLib INTERFACE)
 target_include_directories(VecCoreLib INTERFACE $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
@@ -45,11 +45,21 @@ install(DIRECTORY ${CMAKE_BINARY_DIR}/builtin_vdt/include/VecCoreLib/Private DES
 install(DIRECTORY include/ DESTINATION include)
 install(TARGETS VecCoreLib EXPORT VecCoreLibConfig)
 install(EXPORT VecCoreLibConfig
-  DESTINATION lib/cmake/VecCoreLib
-  )
+	DESTINATION lib/cmake/VecCoreLib
+	)
+
+#install version file
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("VecCoreLibConfigVersion.cmake"
+	VERSION ${VecCoreLib_VERSION}
+	COMPATIBILITY SameMajorVersion
+	)
+install(FILES ${CMAKE_BINARY_DIR}/VecCoreLibConfigVersion.cmake
+	DESTINATION lib/cmake/VecCoreLib
+	)
 
 
-if(BUILD_TESTING)
+if (BUILD_TESTING)
   add_subdirectory(test)
 endif()
 

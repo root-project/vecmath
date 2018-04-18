@@ -18,7 +18,7 @@ make install
 
 In your CMakeLists.txt:
 ```cmake
-find_package(VecCoreLib REQUIRED)
+find_package(VecCoreLib 0.1.0 REQUIRED)
 
 #...
 
@@ -34,5 +34,5 @@ Inside you .cxx file
 #include <VecCoreLib/Rng.h>
 ```
 
-To find project pass to your cmake generation only:
+Pass this to cmake generation of your project to find VecCoreLib(if it is not in CMAKE_INSTALL_PREFIX):
 `-DVecCoreLib_DIR="Path to dir where VecCoreLibConfig.cmake is installed"`
