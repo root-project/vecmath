@@ -1,4 +1,4 @@
-#include "rng/MRG32k3a.h"
+#include "VecCoreLib/Rng/MRG32k3a.h"
 
 namespace vecrng {
 inline namespace cuda {
