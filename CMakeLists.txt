@@ -4,9 +4,6 @@ include(cmake/RecordCmdLine.cmake)
 
 option(BUILD_TESTING    "Build test binaries and create test target" OFF)
 option(BUILD_BENCHMARKS "Build binaries for performance benchmarking")
-if(NOT VecCore_BACKEND)
-	set(VecCore_BACKEND Vc)
-endif()
 set(VecCore_VERSION 0.4.2)
 
 project(VecCoreLib VERSION 0.1.0)
