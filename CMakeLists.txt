@@ -15,11 +15,16 @@ add_library(VecCoreLib INTERFACE)
 target_include_directories(VecCoreLib INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 
 #Find VecCore with correct backend
+set(VecCore_FOUND True) #temporary
 find_package(VecCore ${VecCore_VERSION} REQUIRED COMPONENTS ${VecCore_BACKEND})
 target_link_libraries(VecCoreLib INTERFACE VecCore::VecCore) 
 
 
-#GetVDT
+#GetVDT on cmake generation phase to prevent rebuilding when using this lib from inside your project
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/CMakeLists.txt
+  "
+cmake_minimum_required(VERSION 3.6.0)
 include(ExternalProject)
 ExternalProject_Add(vdt
         GIT_REPOSITORY https://github.com/dpiparo/vdt.git
@@ -31,7 +36,14 @@ ExternalProject_Add(vdt
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecCoreLib/Private/vdt
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/install/include/vdt ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecCoreLib/Private/vdt
 	)
-add_dependencies(VecCoreLib PRIVATE vdt)
+")
+execute_process(COMMAND ${CMAKE_COMMAND} . -G ${CMAKE_GENERATOR}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/)
+execute_process(COMMAND ${CMAKE_COMMAND} --build .
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/)
+execute_process(COMMAND ${CMAKE_COMMAND} --build . --target install
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/)
+
 #when building include vdt from downloaded repo
 target_include_directories(VecCoreLib INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include>)
 
