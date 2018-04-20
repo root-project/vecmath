@@ -5,15 +5,15 @@
 #include <VecCore/VecCore>
 
 namespace vecMath {
-template <typename R> R FastLog(R x) {
-  static_assert(sizeof(R) == 0);
+template <typename R> inline R FastLog(R x) {
+  static_assert(sizeof(R) == 0, "Backend is not supported");
   return x;
 } // Does not compile
 
-template <> double FastLog(double x) { return vdt::fast_log(x); }
+template <> inline double FastLog(double x) { return vdt::fast_log(x); }
 
 #ifdef VECCORE_ENABLE_VC
-template <> Vc::double_v FastLog(Vc::double_v x) { return Vc::log(x); }
+template <> inline Vc::double_v FastLog(Vc::double_v x) { return Vc::log(x); }
 #endif
 }
 
