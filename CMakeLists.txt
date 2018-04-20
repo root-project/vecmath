@@ -43,18 +43,22 @@ target_include_directories(VecCoreLib INTERFACE $<BUILD_INTERFACE:${CMAKE_BINARY
 #Install vdt headers(without shared lib) to $INSTALL_DESTINATION/include/VecCoreLib/Private/vdt/*.h when VecCoreLib is installed
 install(DIRECTORY ${CMAKE_BINARY_DIR}/builtin_vdt/include/VecCoreLib/Private DESTINATION include/VecCoreLib FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY include/ DESTINATION include)
-install(TARGETS VecCoreLib EXPORT VecCoreLibConfig)
-install(EXPORT VecCoreLibConfig
-	DESTINATION lib/cmake/VecCoreLib
-	)
 
-#install version file
 include(CMakePackageConfigHelpers)
+set(VecCoreLib_INSTALL_INCLUDEDIR include)
+configure_package_config_file(cmake/VecCoreLibConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/VecCoreLibConfig.cmake
+  INSTALL_DESTINATION lib/cmake/VecCoreLib
+  PATH_VARS VecCoreLib_INSTALL_INCLUDEDIR
+)
+
 write_basic_package_version_file("VecCoreLibConfigVersion.cmake"
 	VERSION ${VecCoreLib_VERSION}
 	COMPATIBILITY SameMajorVersion
 	)
-install(FILES ${CMAKE_BINARY_DIR}/VecCoreLibConfigVersion.cmake
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/VecCoreLibConfigVersion.cmake
+${CMAKE_CURRENT_BINARY_DIR}/VecCoreLibConfig.cmake
 	DESTINATION lib/cmake/VecCoreLib
 	)
 

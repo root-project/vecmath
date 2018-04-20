@@ -1,0 +1,42 @@
+@PACKAGE_INIT@
+
+set_and_check(VecCoreLib_INCLUDE_DIR "@PACKAGE_VecCoreLib_INSTALL_INCLUDEDIR@")
+
+
+find_package(VecCore 0.4.2 REQUIRED COMPONENTS ${VecCoreLib_FIND_COMPONENTS})
+
+if(VecCore_FOUND)
+foreach(backend ${VecCoreLib_FIND_COMPONENTS})
+  set(VecCoreLib_${backend}_FOUND True)
+endforeach()
+endif()
+
+check_required_components(VecCoreLib)
+
+if(VecCoreLib_FOUND)
+
+  add_library(VecCoreLib::VecCoreLib INTERFACE IMPORTED)
+  
+  #propagate includes / definitions / libraries from veccore
+  set(VecCoreLib_INCLUDE_DIR ${VecCoreLib_INCLUDE_DIR} ${VecCore_INCLUDE_DIRS})
+  message("VCL include dir ${VecCoreLib_INCLUDE_DIR}")
+  set_target_properties(VecCoreLib::VecCoreLib PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${VecCoreLib_INCLUDE_DIR}")
+
+
+  if(VecCore_DEFINITIONS)
+  string(REGEX REPLACE "-D" "" _localdefs "${VecCore_DEFINITIONS}")
+  set_target_properties(VecCoreLib::VecCoreLib PROPERTIES
+    INTERFACE_COMPILE_DEFINITIONS "${_localdefs}")
+  unset(_localdefs)
+  endif()
+
+  if (VecCore_LIBRARIES)
+    set_target_properties(VecCoreLib::VecCoreLib PROPERTIES
+      INTERFACE_LINK_LIBRARIES "${VecCore_LIBRARIES}")
+  endif()
+#  INTERFACE_INCLUDE_DIRECTORIES ${VecCore_INCLUDE_DIRS}
+#  INTERFACE_LINK_LIBRARIES ${VecCore_LIBRARIES}
+#)
+endif()
+
