@@ -2,9 +2,14 @@ cmake_minimum_required(VERSION 3.6.0)
 
 include(cmake/RecordCmdLine.cmake)
 
-option(BUILD_TESTING    "Build test binaries and create test target" OFF)
-option(BUILD_BENCHMARKS "Build binaries for performance benchmarking")
+option(BUILD_TESTING    "Build test binaries and create test target"  OFF)
+option(BUILD_BENCHMARKS "Build binaries for performance benchmarking" OFF)
 set(VecCore_VERSION 0.4.2)
+
+if(BUILD_TESTING)
+  message("Vc backend selected for testing")
+  set(VecCore_BACKEND Vc)
+endif()
 
 project(VecCoreLib VERSION 0.1.0)
 
