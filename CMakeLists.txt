@@ -12,7 +12,6 @@ add_library(VecCoreLib INTERFACE)
 target_include_directories(VecCoreLib INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 
 #Find VecCore with correct backend
-set(VecCore_FOUND True) #temporary
 find_package(VecCore ${VecCore_VERSION} REQUIRED COMPONENTS ${VecCore_BACKEND})
 target_link_libraries(VecCoreLib INTERFACE VecCore::VecCore) 
 

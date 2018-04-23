@@ -3,7 +3,7 @@
   
 # Requirements
 
-+ VecCore(starting from bb702eb8b90098237a43b415ef69475c697bee26)
++ VecCore(starting from cee2341)
 + Optional: Vc, UMESIMD as a VecCore backends
 
 # How to use.
@@ -27,6 +27,14 @@ find_package(VecCoreLib 0.1.0 REQUIRED COMPONENTS Vc) #or any other VecCore back
 #...
 
 target_link_libraries(YOUR_TARGET VecCoreLib::VecCoreLib)
+```
+
+or if you can't use new cmake `target_link_libraries` use old interface
+```cmake
+include_directories(${VecCoreLib_INCLUDE_DIRS})
+add_definitions(${VecCoreLib_DEFINITIONS})
+
+target_link_libraries(YOUR_TARGET ${VecCoreLib_LIBRARIES})
 ```
 
 Pass this to cmake generation of your project to find VecCoreLib(if it is not in CMAKE_INSTALL_PREFIX):
