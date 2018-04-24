@@ -3,5 +3,6 @@
 
 #include "Math/FastExp.h"
 #include "Math/FastLog.h"
+#include "Math/FastPow.h"
 
 #endif // VECCORELIB_MATH_H
