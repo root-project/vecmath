@@ -23,11 +23,24 @@ int main() {
   std::cout << "std::pow " << std::pow(12.0, 0.3) << std::endl;
 
   srand(time(NULL));
-  double x = rand();
+  double x = (rand() % 100);
+  std::cout << "X = " << x << std::endl;
   std::cout << "IntPow:" << std::endl;
   std::cout << vecMath::IntPow(x, 3) << std::endl;
   std::cout << vecMath::IntPow((vecCore::backend::VcVector::Double_v)x, 3)
             << std::endl;
   std::cout << "std::pow " << std::pow(x, 3) << std::endl;
+
+  std::cout << "Sin:" << std::endl;
+  std::cout << vecMath::FastSin(x) << std::endl;
+  std::cout << vecMath::FastSin((vecCore::backend::VcVector::Double_v)x)
+            << std::endl;
+  std::cout << "std::sin " << std::sin(x) << std::endl;
+
+  std::cout << "Cos:" << std::endl;
+  std::cout << vecMath::FastCos(x) << std::endl;
+  std::cout << vecMath::FastCos((vecCore::backend::VcVector::Double_v)x)
+            << std::endl;
+  std::cout << "std::cos " << std::cos(x) << std::endl;
   return 0;
 }

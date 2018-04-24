@@ -5,7 +5,7 @@
 #include "FastLog.h"
 
 namespace vecMath {
-template <typename R> inline R FastPow(R base, R exponent) {
+template <typename R> inline R FastPow(R x, R n) {
   return FastExp(FastLog(x) * n);
 }
 
