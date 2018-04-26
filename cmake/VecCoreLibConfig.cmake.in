@@ -4,8 +4,9 @@ set_and_check(VecCoreLib_INCLUDE_DIR "@PACKAGE_VecCoreLib_INSTALL_INCLUDEDIR@")
 set(VecCoreLib_FOUND True)
 
 
-include(CMakeFindDependencyMacro)
-find_dependency(VecCore @VecCore_VERSION@ REQUIRED COMPONENTS ${VecCoreLib_FIND_COMPONENTS})
+#include(CMakeFindDependencyMacro)
+#find_dependency(VecCore @VecCore_VERSION@ REQUIRED COMPONENTS ${VecCoreLib_FIND_COMPONENTS})
+find_package(VecCore @VecCore_VERSION@ REQUIRED COMPONENTS ${VecCoreLib_FIND_COMPONENTS})
 
 if(VecCore_FOUND)
 foreach(backend ${VecCoreLib_FIND_COMPONENTS})
