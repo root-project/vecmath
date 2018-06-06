@@ -1,10 +1,11 @@
 ## VecRng: Installation and Tests
 
-### How to install VecCore with VecRng, add -DVECRNG=ON
+### When you install VecCoreLib it now comes with VecRng
 
     cd ${BUILD_DIR}
-    cmake ${SRC_DIR}/VecCoreLib -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}/VecCoreLib \
-          -DVECRNG=ON
+    cmake ${SRC_DIR}/VecCoreLib \
+          -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}/VecCoreLib
+          
     make install
 
 ### How to build the VecRng test (RngBenchmark), add -DBUILD_RNGTEST=ON 
