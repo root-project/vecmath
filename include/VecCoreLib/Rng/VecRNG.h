@@ -16,7 +16,13 @@ inline namespace VECRNG_IMPL_NAMESPACE {
 
 template <typename DerivedT>
 struct RNG_traits;
-  
+
+/****
+template <typename Derived>
+struct RNG_traits<Derived> {
+};
+****/
+
 template <typename DerivedT>
 class VecRNG {
 
@@ -80,29 +86,36 @@ public:
   VECCORE_ATT_HOST
   void PrintState() const { static_cast<DerivedT *>(this)->PrintState(); }
 
-
-  // Type for scalar VecRNG state
-  using ScalarBackend = vecCore::backend::Scalar;
-  using ScalarRngType = VecRNG<ScalarBackend>;
-  // using State_scalar = typename RNG_traits<DerivedT<ScalarBackend> >::State_t;
-  using State_scalar = typename RNG_traits<ScalarRngType>::State_t;  
-  // using State_v = typename RNG_traits<DerivedT<VectorBackend> >::State_t;
-  
-  // Auxiliary methods
-
   VECCORE_ATT_HOST_DEVICE
   void SetState(State_t *state) { fState = state; }
 
   VECCORE_ATT_HOST_DEVICE
-  void SetState(State_scalar *state, int i)
+  State_t* GetState() const { return fState; }
+
+// #define DEFINE_PER_ELEMENT_GET_SET  1
+#ifdef DEFINE_PER_ELEMENT_GET_SET  
+  // Type for scalar VecRNG state
+  // using ScalarBackend = vecCore::backend::Scalar;
+  // using ScalarRngType = typename VecRNG<ScalarBackend>;
+  // using State_scalar = typename RNG_traits<ScalarRngType>::State_t;    
+  // using State_scalar = typename RNG_traits<DerivedT<ScalarBackend> >::State_t;
+  // using State_v = typename RNG_traits<DerivedT<VectorBackend> >::State_t;
+
+  // From VecCore backend/Interface.h: 
+  // template <typename T>
+  //  using Scalar = typename TypeTraits<T>::ScalarType;
+  
+  VECCORE_ATT_HOST_DEVICE
+  void SetPartOfState( typename RNG_traits<VecRNG<ScalarBackend>>::State_t *state, // State_scalar
+                       int i)
   { static_cast<DerivedT *>(this)->template SetState<BackendT>(state, i); }
      
   VECCORE_ATT_HOST_DEVICE
-  State_t* GetState() const { return fState; }
-
-  VECCORE_ATT_HOST_DEVICE
-  State_scalar* GetState(int i) const 
+  typename RNG_traits<VecRNG<ScalarBackend>>::State_t * // State_scalar*
+     GetPartOfState(int i) const
   { return static_cast<DerivedT *>(this)->template GetState<BackendT>(i); }
+#endif
+  // Auxiliary methods
   
   //Common methods
 

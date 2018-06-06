@@ -103,10 +103,23 @@ public:
   void AdvanceState(long n, long e);
 
   VECCORE_ATT_HOST void PrintState() const;
-
+  // static void PrintState(const State_t& state);
+  static void PrintState(const typename RNG_traits<MRG32k3a<ScalarBackend> >::State_t & state);
+                                    
+  
   VECCORE_ATT_HOST_DEVICE
   void SetSeed(Real_t seed[MRG::vsize]);
 
+  // New methods for use in gathering/joining scalar RNG instances into a vector instance,
+  //   and copying their state back (once done).
+  VECCORE_ATT_HOST
+  VECCORE_FORCE_INLINE     
+  void    SetPartOfState(State_s *state, int i);
+
+  VECCORE_ATT_HOST
+  VECCORE_FORCE_INLINE     
+  State_s GetPartOfState(int i) const; 
+  
 private:
 
   // the mother is friend of this
@@ -236,7 +249,7 @@ void MRG32k3a<BackendT>::Initialize(long streamId)
   AdvanceState(e,0);
 }
  
-// Specialization for the scalar backend to initialize an arrary of states of which size is threads.
+// Specialization for the scalar backend to initialize an array of states of which size is threads.
 // "states" should be allocated beforehand, but can be used for both host and device pointers
 template <>
 VECCORE_ATT_HOST
@@ -531,29 +544,50 @@ void MRG32k3a<BackendT>::MatPowModM (const double A[3][3],
 
 template <class BackendT>
 VECCORE_ATT_HOST
-void MRG32k3a<BackendT>::SetState(State_s *state, int i)
+void MRG32k3a<BackendT>::SetPartOfState(State_s *stRight, int i)
 {
    // State ... 
    //  BackendT::Double_v fBg[MRG::vsize];
+   auto myState=  VecRNG<MRG32k3a<BackendT>>::GetState();
    for( int j= 0; j < MRG::vsize; ++j )
-      vecCore::Set( fBg[j], i, state[j] );
+      vecCore::Set( myState->fCg[j], i, stRight->fCg[j] );
 
-   std::cout << " Argument: state " << *state << " and index " << i << std::endl;
-   std::cout << "    Vector state ";
-   std::cout << " [j] = " << j << " state: " << fBg[j] << endl;
+#ifdef DEBUG   
+   std::cout << " Argument: state "; PrintState( *stRight );
+   std::cout << " and index " << i << std::endl
+             << " Output: " << std::endl;
+   std::cout << "   Vector state: " << std::endl;
+   for( int j= 0; j < MRG::vsize; ++j )
+      std::cout << " [j] = " << j << " state: " << myState->fCg[j] << std::endl;
+#endif
 }
 
 template <class BackendT>
 VECCORE_ATT_HOST
-State_s MRG32k3a<BackendT>::GetState(int i) const 
+typename RNG_traits<MRG32k3a<ScalarBackend> >::State_t
+MRG32k3a<BackendT>::GetPartOfState(int i) const 
 {
+  using VecRNG<MRG32k3a<BackendT>>::GetState;
   // State ... 
   State_s tempStateScalar;
   
   for( int j= 0; j < MRG::vsize; ++j )
-     tempState.fBg[j] = vecCore::Get( fBg[j], i );
+     tempStateScalar.fCg[j] = vecCore::Get( GetState()->fCg[j], i );
 
   return tempStateScalar;
+}
+
+// Print information of given state
+template <typename BackendT>
+VECCORE_ATT_HOST
+void MRG32k3a<BackendT>::PrintState(const
+                                    // state_t&
+                                    typename RNG_traits<MRG32k3a<ScalarBackend> >::State_t &
+                                    state)
+{
+  for(size_t j = 0 ; j < MRG::vsize ; ++j) {
+    std::cout << state.fCg[j] << std::endl;
+  }
 }
 
 } // end namespace impl
