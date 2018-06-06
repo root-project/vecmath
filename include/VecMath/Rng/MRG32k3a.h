@@ -560,6 +560,33 @@ void MRG32k3a<BackendT>::MatPowModM (const double A[3][3],
   }
 }
 
+template <class BackendT>
+VECCORE_ATT_HOST
+void MRG32k3a<BackendT>::SetState(State_s *state, int i)
+{
+   // State ... 
+   //  BackendT::Double_v fBg[MRG::vsize];
+   for( int j= 0; j < MRG::vsize; ++j )
+      vecCore::Set( fBg[j], i, state[j] );
+
+   std::cout << " Argument: state " << *state << " and index " << i << std::endl;
+   std::cout << "    Vector state ";
+   std::cout << " [j] = " << j << " state: " << fBg[j] << endl;
+}
+
+template <class BackendT>
+VECCORE_ATT_HOST
+State_s MRG32k3a<BackendT>::GetState(int i) const 
+{
+  // State ... 
+  State_s tempStateScalar;
+  
+  for( int j= 0; j < MRG::vsize; ++j )
+     tempState.fBg[j] = vecCore::Get( fBg[j], i );
+
+  return tempStateScalar;
+}
+
 } // end namespace impl
 } // end namespace vecRng
 
