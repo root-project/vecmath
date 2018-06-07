@@ -20,6 +20,22 @@ inline void FastSinCos(Vc::double_v x, Vc::double_v &s, Vc::double_v &c) {
 }
 #endif
 
+#ifdef VECCORE_ENABLE_AGNER
+template <> inline void FastSinCos(vcl::Vec4d x, vcl::Vec4d &s, vcl::Vec4d &c) {
+  s = vcl::sincos(&c, x);
+}
+template <> inline void FastSinCos(vcl::Vec8f x, vcl::Vec8f &s, vcl::Vec8f &c) {
+  s = vcl::sincos(&c, x);
+}
+template <> inline void FastSinCos(vcl::Vec8d x, vcl::Vec8d &s, vcl::Vec8d &c) {
+  s = vcl::sincos(&c, x);
+}
+template <>
+inline void FastSinCos(vcl::Vec16f x, vcl::Vec16f &s, vcl::Vec16f &c) {
+  s = vcl::sincos(&c, x);
+}
+#endif
+
 template <typename R> inline R FastSin(R x) {
   R s, c;
   FastSinCos(x, s, c);
@@ -31,6 +47,6 @@ template <typename R> inline R FastCos(R x) {
   FastSinCos(x, s, c);
   return c;
 }
-}
+} // namespace vecMath
 
 #endif // VECCORELIB_MATH_FASTSINCOS_H
