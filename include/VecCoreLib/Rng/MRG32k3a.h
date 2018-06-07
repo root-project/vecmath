@@ -172,7 +172,8 @@ void MRG32k3a<BackendT>::SetNextStream()
 {
   for(size_t i = 0 ; i < VectorSize<Double_v>() ; ++i) {
     for (int j = 0; j < MRG::vsize ; ++j) {
-      this->fState->fCg[j][i] = fBg[j][i] = fSeed[j];
+      vecCore::Set(fBg[j],i,fSeed[j]);
+      vecCore::Set(this->fState->fCg[j],i,fSeed[j]);
     }
     MatVecModM(MRG::A1p127, fSeed, fSeed, MRG::m1);
     MatVecModM(MRG::A2p127, &fSeed[3], &fSeed[3], MRG::m2);
