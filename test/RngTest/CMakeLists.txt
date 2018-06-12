@@ -83,7 +83,7 @@ endif()
 
 
 # Find VecCore with selected components turned on (CUDA and backend)
-find_package(VecCore REQUIRED COMPONENTS ${VecCore_COMPONENTS})
+#find_package(VecCore REQUIRED COMPONENTS ${VecCore_COMPONENTS})
 
 include_directories(SYSTEM ${VecCore_INCLUDE_DIRS})
 set(RNGTEST_DEFINITIONS "${RNGTEST_DEFINITIONS} ${VecCore_DEFINITIONS}")
@@ -347,6 +347,13 @@ set(TEST_EXECUTABLES
   ${PROJECT_SOURCE_DIR}/src/RngBenchmark.cc
   ${PROJECT_SOURCE_DIR}/src/PdfBenchmark.cc
 )
+
+# Add executables testing only for HOST
+if (NOT RNGTEST_CUDA)
+  set(TEST_EXECUTABLES
+    ${PROJECT_SOURCE_DIR}/src/RngExample1.cc
+  )
+endif()
 
 # Build executables
 set(RNGTEST_EXECUTABLES)
