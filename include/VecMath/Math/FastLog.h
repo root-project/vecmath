@@ -1,7 +1,7 @@
-#ifndef VECCORELIB_MATH_FASTLOG_H
-#define VECCORELIB_MATH_FASTLOG_H
+#ifndef VECMATH_MATH_FASTLOG_H
+#define VECMATH_MATH_FASTLOG_H
 
-#include "VecCoreLib/Private/vdt/log.h"
+#include "VecMath/Private/vdt/log.h"
 #include <VecCore/VecCore>
 
 namespace vecMath {
@@ -17,4 +17,4 @@ template <> inline Vc::double_v FastLog(Vc::double_v x) { return Vc::log(x); }
 #endif
 }
 
-#endif // VECCORELIB_MATH_FASTLOG_H
+#endif // VECMATH_MATH_FASTLOG_H

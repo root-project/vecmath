@@ -1,5 +1,5 @@
-#ifndef VECCORELIB_MATH_FASTPOW_H
-#define VECCORELIB_MATH_FASTPOW_H
+#ifndef VECMATH_MATH_FASTPOW_H
+#define VECMATH_MATH_FASTPOW_H
 
 #include "FastExp.h"
 #include "FastLog.h"
@@ -22,4 +22,4 @@ inline constexpr R IntPow(const R base, unsigned const exponent) {
 }
 }
 
-#endif // VECCORELIB_MATH_FASTPOW_H
+#endif // VECMATH_MATH_FASTPOW_H

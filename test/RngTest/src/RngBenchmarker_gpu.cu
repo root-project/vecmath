@@ -1,6 +1,6 @@
-#include "VecCoreLib/Rng/MRG32k3a.h"
-#include "VecCoreLib/Rng/Threefry.h"
-#include "VecCoreLib/Rng/Philox.h"
+#include "VecMath/Rng/MRG32k3a.h"
+#include "VecMath/Rng/Threefry.h"
+#include "VecMath/Rng/Philox.h"
 
 namespace vecrng {
 inline namespace cuda {

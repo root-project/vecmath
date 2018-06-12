@@ -1,6 +1,6 @@
 #include "VecCore/Timer.h"
 
-#include "VecCoreLib/Rng/MRG32k3a.h"
+#include "VecMath/Rng/MRG32k3a.h"
 
 #include "RngTest.h"
 

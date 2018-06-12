@@ -1,7 +1,7 @@
-#ifndef VECCORELIB_MATH_FASTSINCOS_H
-#define VECCORELIB_MATH_FASTSINCOS_H
+#ifndef VECMATH_MATH_FASTSINCOS_H
+#define VECMATH_MATH_FASTSINCOS_H
 
-#include "VecCoreLib/Private/vdt/sincos.h"
+#include "VecMath/Private/vdt/sincos.h"
 #include <VecCore/VecCore>
 
 namespace vecMath {
@@ -33,4 +33,4 @@ template <typename R> inline R FastCos(R x) {
 }
 }
 
-#endif // VECCORELIB_MATH_FASTSINCOS_H
+#endif // VECMATH_MATH_FASTSINCOS_H

@@ -3,7 +3,7 @@
 ### How to install VecCore with VecRng, add -DVECRNG=ON
 
     cd ${BUILD_DIR}
-    cmake ${SRC_DIR}/VecCoreLib -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}/VecCoreLib \
+    cmake ${SRC_DIR}/VecMath -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}/VecMath \
           -DVECRNG=ON
     make install
 
@@ -13,7 +13,7 @@
  - to test the CUDA backend, add -DRNGTEST_CUDA=ON
 
     cd ${BUILD_DIR}
-    cmake $SRC_DIR/VecCoreLib -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}/VecCoreLib \
+    cmake $SRC_DIR/VecMath -DCMAKE_INSTALL_PREFIX=${INSTALL_DIR}/VecMath \
           -DCMAKE_PREFIX_PATH="$VCROOT" -DBACKEND=Vc \
           -DCMAKE_BUILD_TYPE=Release -DBUILD_RNGTEST=ON -DRNGTEST_CUDA=ON
     make -j4

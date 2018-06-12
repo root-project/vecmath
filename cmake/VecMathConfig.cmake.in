@@ -1,0 +1,26 @@
+@PACKAGE_INIT@
+
+set_and_check(VecMath_INCLUDE_DIR "@PACKAGE_VecMath_INSTALL_INCLUDEDIR@")
+set(VecMath_FOUND True)
+
+
+#include(CMakeFindDependencyMacro)
+#find_dependency(VecCore @VecCore_VERSION@ REQUIRED COMPONENTS ${VecMath_FIND_COMPONENTS})
+find_package(VecCore @VecCore_VERSION@ REQUIRED COMPONENTS ${VecMath_FIND_COMPONENTS})
+
+if(VecCore_FOUND)
+foreach(backend ${VecMath_FIND_COMPONENTS})
+  set(VecMath_${backend}_FOUND VecMath_${backend}_FOUND)
+endforeach()
+endif()
+
+check_required_components(VecMath)
+
+include(${CMAKE_CURRENT_LIST_DIR}/VecMathTargets.cmake)
+
+#for old cmake support
+if(VecMath_FOUND)
+  set(VecMath_INCLUDE_DIRS ${VecMath_INCLUDE_DIR} ${VecCore_INCLUDE_DIRS})
+  set(VecMath_DEFINITIONS ${VecCore_DEFINITIONS})
+  set(VecMath_LIBRARIES ${VecCore_LIBRARIES})
+endif()

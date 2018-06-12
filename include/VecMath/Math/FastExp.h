@@ -1,7 +1,7 @@
-#ifndef VECCORELIB_MATH_FASTEXP_H
-#define VECCORELIB_MATH_FASTEXP_H
+#ifndef VECMATH_MATH_FASTEXP_H
+#define VECMATH_MATH_FASTEXP_H
 
-#include "VecCoreLib/Private/vdt/exp.h"
+#include "VecMath/Private/vdt/exp.h"
 #include <VecCore/VecCore>
 
 namespace vecMath {
@@ -17,4 +17,4 @@ template <> inline Vc::double_v FastExp(Vc::double_v x) { return Vc::exp(x); }
 #endif
 }
 
-#endif // VECCORELIB_MATH_FASTEXP_H
+#endif // VECMATH_MATH_FASTEXP_H

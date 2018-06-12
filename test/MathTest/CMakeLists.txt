@@ -1,2 +1,2 @@
 add_executable(MathTestBasic MathTestBasic.cxx)
-target_link_libraries(MathTestBasic VecCoreLib)
+target_link_libraries(MathTestBasic VecMath)

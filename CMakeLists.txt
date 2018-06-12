@@ -11,14 +11,14 @@ if(BUILD_TESTING)
   set(VecCore_BACKEND Vc)
 endif()
 
-project(VecCoreLib VERSION 0.1.0)
+project(VecMath VERSION 0.1.0)
 
-add_library(VecCoreLib INTERFACE)
-target_include_directories(VecCoreLib INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
+add_library(VecMath INTERFACE)
+target_include_directories(VecMath INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 
 #Find VecCore with correct backend
 find_package(VecCore ${VecCore_VERSION} REQUIRED COMPONENTS ${VecCore_BACKEND})
-target_link_libraries(VecCoreLib INTERFACE VecCore::VecCore) 
+target_link_libraries(VecMath INTERFACE VecCore::VecCore) 
 
 
 #GetVDT on cmake generation phase to prevent rebuilding when using this lib from inside your project
@@ -34,8 +34,8 @@ ExternalProject_Add(vdt
 
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/install
         INSTALL_COMMAND ${CMAKE_COMMAND} --build . --target install
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecCoreLib/Private/vdt
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/install/include/vdt ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecCoreLib/Private/vdt
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecMath/Private/vdt
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/install/include/vdt ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecMath/Private/vdt
 	)
 ")
 execute_process(COMMAND ${CMAKE_COMMAND} . -G ${CMAKE_GENERATOR}
@@ -46,44 +46,44 @@ execute_process(COMMAND ${CMAKE_COMMAND} --build . --target install
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/)
 
 #when building include vdt from downloaded repo
-target_include_directories(VecCoreLib INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include>)
+target_include_directories(VecMath INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include>)
 
 
 #installation configuration
-#Install vdt headers(without shared lib) to $INSTALL_DESTINATION/include/VecCoreLib/Private/vdt/*.h when VecCoreLib is installed
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecCoreLib/Private DESTINATION include/VecCoreLib FILES_MATCHING PATTERN "*.h")
+#Install vdt headers(without shared lib) to $INSTALL_DESTINATION/include/VecMath/Private/vdt/*.h when VecMath is installed
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecMath/Private DESTINATION include/VecMath FILES_MATCHING PATTERN "*.h")
 install(DIRECTORY include/ DESTINATION include)
 
 include(CMakePackageConfigHelpers)
 
 #exported targets file
-install(TARGETS VecCoreLib EXPORT VecCoreLibTargets
+install(TARGETS VecMath EXPORT VecMathTargets
   INCLUDES DESTINATION include
 )
-export(EXPORT VecCoreLibTargets
-  FILE "${CMAKE_CURRENT_BINARY_DIR}/VecCoreLibTargets.cmake"
-  NAMESPACE VecCoreLib::
+export(EXPORT VecMathTargets
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/VecMathTargets.cmake"
+  NAMESPACE VecMath::
 )
 
 #package config file
-set(VecCoreLib_INSTALL_INCLUDEDIR include)
-configure_package_config_file(cmake/VecCoreLibConfig.cmake.in
-  ${CMAKE_CURRENT_BINARY_DIR}/VecCoreLibConfig.cmake
-  INSTALL_DESTINATION lib/cmake/VecCoreLib
-  PATH_VARS VecCoreLib_INSTALL_INCLUDEDIR
+set(VecMath_INSTALL_INCLUDEDIR include)
+configure_package_config_file(cmake/VecMathConfig.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/VecMathConfig.cmake
+  INSTALL_DESTINATION lib/cmake/VecMath
+  PATH_VARS VecMath_INSTALL_INCLUDEDIR
 )
 
 #version file
-write_basic_package_version_file("VecCoreLibConfigVersion.cmake"
-	VERSION ${VecCoreLib_VERSION}
+write_basic_package_version_file("VecMathConfigVersion.cmake"
+	VERSION ${VecMath_VERSION}
 	COMPATIBILITY SameMajorVersion
 	)
 
 #install package
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/VecCoreLibConfigVersion.cmake
-${CMAKE_CURRENT_BINARY_DIR}/VecCoreLibConfig.cmake
-${CMAKE_CURRENT_BINARY_DIR}/VecCoreLibTargets.cmake
-	DESTINATION lib/cmake/VecCoreLib
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/VecMathConfigVersion.cmake
+${CMAKE_CURRENT_BINARY_DIR}/VecMathConfig.cmake
+${CMAKE_CURRENT_BINARY_DIR}/VecMathTargets.cmake
+	DESTINATION lib/cmake/VecMath
 	)
 
 

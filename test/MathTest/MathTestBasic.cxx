@@ -1,4 +1,4 @@
-#include <VecCoreLib/Math.h>
+#include <VecMath/Math.h>
 
 #include <cmath>
 #include <cstdlib>

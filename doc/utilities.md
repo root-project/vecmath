@@ -1,4 +1,4 @@
-# Content of VecCoreLib
+# Content of VecMath
 
-VecCoreLib contains random number generators, fast math functions
+VecMath contains random number generators, fast math functions
 
