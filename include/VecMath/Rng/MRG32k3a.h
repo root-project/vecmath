@@ -96,6 +96,16 @@ public:
   VECCORE_FORCE_INLINE
   typename ReturnTypeBackendT::Double_v Kernel(State_t& state);
 
+  //Copy a scalar state explicitly to the i-th lane of the vector state
+
+  VECCORE_FORCE_INLINE
+  VECCORE_ATT_HOST_DEVICE
+  void SetStateAt(unsigned int i, State_s *state); 
+
+  VECCORE_FORCE_INLINE
+  VECCORE_ATT_HOST_DEVICE
+  State_s GetStateAt(unsigned int i);
+
   // Auxiliary methods
   
   VECCORE_ATT_HOST
@@ -163,6 +173,27 @@ MRG32k3a<BackendT>::MRG32k3a(const MRG32k3a<BackendT> &rng)
     fBg[i] = rng.fBg[i];
   }
 }
+
+//Copy a scalar state to at the ith-lane of the vector state
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE
+void MRG32k3a<VectorBackend>::SetStateAt(unsigned int i, State_s *state) {
+  for(int j=0 ; j < MRG::vsize ; ++j) this->fState->fCg[j][i] = state->fCg[j];
+}
+
+//Return the ith-lane of the vector state to a scalar state
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE
+MRG32k3a<VectorBackend>::State_s MRG32k3a<VectorBackend>::GetStateAt(unsigned int i) 
+{ 
+  State_s state;
+  for(int j = 0 ; j < MRG::vsize ; ++j) {
+    state.fCg[j]= this->fState->fCg[j][i];
+  }
+  return state;
+} 
 
 // Reset stream to the next Stream.
 template <typename BackendT>

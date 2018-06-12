@@ -88,6 +88,14 @@ public:
   VECCORE_ATT_HOST_DEVICE
   State_t* GetState() const { return fState; }
 
+  VECCORE_ATT_HOST_DEVICE
+  void SetStateAt(unsigned int i, State_t *state) 
+  { return static_cast<DerivedT *>(this)->template SetStateAt(i, state); }
+
+  VECCORE_ATT_HOST_DEVICE
+  State_t* GetStateAt(unsigned int i) const 
+  { return static_cast<DerivedT *>(this)->template GetStateAt(i); }
+
   //Common methods
 
   // Returns an array of random numbers of the type BackendT::Double_v
