@@ -178,13 +178,15 @@ double VectorMRG32k3a_Basic(int nsample, double& result)
 }
 // #endif
 
-double VectorMRG32k3a_JoiningProxy(int nsample, double& result)
+double VectorMRG32k3a_JoiningProxyAuto(int nsample, double& result)
 {
    // Vector MRG32k3a
   using Double_v = typename VectorBackend::Double_v;
   constexpr int vsize = VectorSize<Double_v>();
 
   using ScalarRngType = vecRng::cxx::MRG32k3a<ScalarBackend>;
+
+  std::cout << "VectorMRG32k3a_JoiningProxy() called - nsamples = " << nsample << std::endl;
   
   ScalarRngType scalarRng[vsize];
   ScalarRngType * arrayScalarRngPtr[vsize];
@@ -228,63 +230,81 @@ double VectorMRG32k3a_JoiningProxy(int nsample, double& result)
      
   return elapsedTime;
 }
+
+// ---------------============================------------------------------------------
+
+double VectorMRG32k3a_JoiningProxyExplicit(int nsample, double& result)
+{
+   // Vector MRG32k3a
+  using Double_v = typename VectorBackend::Double_v;
+  constexpr int vsize = VectorSize<Double_v>();
+
+  using ScalarRngType = vecRng::cxx::MRG32k3a<ScalarBackend>;
+  using std::cout;
+  using std::endl;
+  
+  cout << "Test of VectorMRG32k3a, version 'JoiningProxyExplicit' called - nsamples = " << nsample << endl;
+  
+  ScalarRngType scalarRng[vsize];
+  ScalarRngType * arrayScalarRngPtr[vsize];
+  std::cout << "Benchmark setup - scalar Rng setup " << std::endl;
+  for (int i = 0; i < vsize ; ++i) {  
+     scalarRng[i].Initialize(i);
+     arrayScalarRngPtr[i]= & scalarRng[i];
+
+     std::cout << " Address [ " << i << " ] = " << arrayScalarRngPtr[i] << " - expected " << scalarRng+i << std::endl;
+  }
+  // using VectorRngProxyType = vecRng::JoiningProxyVecRNG< vecRng::cxx::MRG32k3a<VectorBackend>>;
+  using VectorRngProxyType = vecRng::JoiningProxyVecMRG32k3a<VectorBackend>;
+
+  VectorRngProxyType vecRng;
+  vecRng.Join( arrayScalarRngPtr, vsize );
+  
+  double elapsedTime = 0.;
+  // Create a scope, so see also the copying back of scalar RNGs
+  { 
+     // Prepare the (vector) proxy rng giving the scalar ones !!
+     static Timer<nanoseconds> timer;
+     
+     Double_v sum = 0.;
+     int      ntrials=  nsample/vsize;
+     timer.Start();
+     
+     for (int i = 0; i < ntrials ; ++i) {
+        sum += vecRng.Uniform();
+     }
+
+     elapsedTime = timer.Elapsed();
+     for (int i = 0; i < vsize ; ++i) result += sum[i];
+  }
+  cout << " Calling Split() " << endl;
+  vecRng.Split();
+
+  cout << "Next values: " << endl;
+  for (int i = 0; i < vsize ; ++i) {
+     double value = scalarRng[i].NativeUniform(); // Uniform<ScalarBackend>();
+     cout << " [ " << i << " ] " << value  << endl;
+  }
+     
+  return elapsedTime;
+}
+
+// ---------------============================------------------------------------------
+   
 double VectorMRG32k3a(int nsample, double& result)
 {
    double time=0.0;
+   std::cout << "Test of VectorMRG32k3a called - nsamples = " << nsample << std::endl;
    time=
       // VectorMRG32k3a_Basic(nsample, result);
       // VectorMRG32k3a_JoinByHand(nsample, result);      
-         VectorMRG32k3a_JoiningProxy(nsample, result);   
+      // VectorMRG32k3a_JoiningProxyAuto(nsample, result);
+         VectorMRG32k3a_JoiningProxyExplicit(nsample, result);      
    
    return time;
 }
 // ---------------============================------------------------------------------
 
-#ifdef NEW_TEST_JOINING_PROXY
-double VectorJoiningMRG32k3a(int nsample, double& result)
-{
-  // Vector MRG32k3a
-  using Double_v = typename VectorBackend::Double_v;
-  // using template MRG32k3a<Backend> = typename vecRng::cxx::MRG32k3a<Backend>;  
-  using JoiningProxyMRG32K3a = typename vecRng::cxx::JoiningProxyVecRNG<MRG32k3a<VectorBackend>,
-                                                                        MRG32k3a<ScalarBackend>,
-                                                                        VectorBackend>;
-  constexpr int VecSize = VectorSize<Double_v>();
-
-  // Multiple scalar MRG32k3a
-  static vecRng::cxx::MRG32k3a<ScalarBackend> scalarRng[VecSize];
-  for (int i = 0; i < VecSize ; ++i) {  
-     scalarRng[i].Initialize(i);
-  }
-  
-  // vecRng::cxx::MRG32k3a<VectorBackend> rng;
-  // rng.Initialize();
-
-  JoiningProxyMRG32k3a rng( scalarRng );
-  // rng.Join( scalarRng );
-  
-  static Timer<nanoseconds> timer;
-  double elapsedTime = 0.;
-
-  Double_v sum = 0.;
-
-  timer.Start();
-
-  for (int i = 0; i < nsample/VecSize ; ++i) {
-    sum += rng.Uniform<VectorBackend>();
-  }
-
-  elapsedTime = timer.Elapsed();
-  for (int i = 0; i < VecSize ; ++i) result += sum[i];
-
-  // rng.Split();
-  
-  return elapsedTime;
-}
-#endif
-
-// ---------------============================------------------------------------------
-   
 double VectorThreefry(int nsample, double& result)
 {
   // Vector Threefry
