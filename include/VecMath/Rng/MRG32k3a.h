@@ -120,15 +120,23 @@ public:
   VECCORE_ATT_HOST_DEVICE
   void SetSeed(Real_t seed[MRG::vsize]);
 
+  // New methods copying state into existing instance
+  VECCORE_ATT_HOST
+  VECCORE_FORCE_INLINE     
+  void   CopyState(const State_t& rightState)
+  { for (int i=0; i< MRG::vsize; ++i) { this->fState->fCg[i] = rightState.fCg[i]; }  }
+ 
+  
   // New methods for use in gathering/joining scalar RNG instances into a vector instance,
   //   and copying their state back (once done).
   VECCORE_ATT_HOST
   VECCORE_FORCE_INLINE     
-  void    SetPartOfState(State_s *state, int i);
+  void    SetPartOfState(const State_s& state, int i);
 
   VECCORE_ATT_HOST
-  VECCORE_FORCE_INLINE     
-  State_s GetPartOfState(int i) const; 
+  VECCORE_FORCE_INLINE
+  State_s GetPartOfState(int i) const;      
+  // Creates a copy of the state of lane 'i' - extracted from Double_v state
   
 private:
 
@@ -575,13 +583,13 @@ void MRG32k3a<BackendT>::MatPowModM (const double A[3][3],
 
 template <class BackendT>
 VECCORE_ATT_HOST
-void MRG32k3a<BackendT>::SetPartOfState(State_s *stRight, int i)
+void MRG32k3a<BackendT>::SetPartOfState(const State_s & stRight, int i)
 {
    // State ... 
    //  BackendT::Double_v fBg[MRG::vsize];
    auto myState=  VecRNG<MRG32k3a<BackendT>>::GetState();
    for( int j= 0; j < MRG::vsize; ++j )
-      vecCore::Set( myState->fCg[j], i, stRight->fCg[j] );
+      vecCore::Set( myState->fCg[j], i, stRight.fCg[j] );
 
 #ifdef DEBUG   
    std::cout << " Argument: state "; PrintState( *stRight );
@@ -598,12 +606,14 @@ VECCORE_ATT_HOST
 typename RNG_traits<MRG32k3a<ScalarBackend> >::State_t
 MRG32k3a<BackendT>::GetPartOfState(int i) const 
 {
-  using VecRNG<MRG32k3a<BackendT>>::GetState;
+  // using VecRNG<MRG32k3a<BackendT>>::GetState;
+
   // State ... 
   State_s tempStateScalar;
+  // auto vecState=GetState();
   
   for( int j= 0; j < MRG::vsize; ++j )
-     tempStateScalar.fCg[j] = vecCore::Get( GetState()->fCg[j], i );
+     tempStateScalar.fCg[j] = vecCore::Get( this->GetState()->fCg[j], i );
 
   return tempStateScalar;
 }

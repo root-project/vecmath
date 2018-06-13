@@ -9,7 +9,7 @@ inline namespace VECRNG_IMPL_NAMESPACE {
 
 template <typename BackendT>
    class JoiningProxyVecMRG32k3a :
-     public MRG32k3a<BackendT>
+        public MRG32k3a<BackendT>
      // public BaseVecRNGType /* <BackendT> */    // Type 1: derive & extend
      // public VecRNG< JoiningProxyVecMRG32k3a<BackendT> >  // Type 2: Use 'has'
 {
@@ -101,10 +101,10 @@ void
    assert( numStates == VectorSize<BackendT> );
         // If other parameters must be initialised ...
 
-   for( int i= 0; i < BackendT::VectorSize; ++i ) {
+   for( int i= 0; i < VectorSize<BackendT>(); ++i ) {
       assert( trackPrng[i] != nullptr );
 
-      SetState( fScalarTrackPrng[i].GetState(), i);
+      MRG32k3a<BackendT>::SetPartOfState( *fScalarTrackPrng[i]->GetState(), i);
       // Keep record of locations of per-track PRNG - in order to copy back the final state         
       fScalarTrackPrng[i] = trackPrng[i];
 
@@ -116,9 +116,11 @@ void
 template <typename BackendT>
 void JoiningProxyVecMRG32k3a<BackendT>::Split()
 {
-   for( int i= 0; i < BackendT::VectorSize; ++i ) {
-      fScalarTrackPrng[i].SetState(
-         MRG32k3a<BackendT>::GetState().fVectorRNG.GetPartOfState(i) ); // Sets full state
+   for( int i= 0; i < VectorSize<BackendT>(); ++i ) {
+      auto partState = MRG32k3a<BackendT>::GetPartOfState(i); // Sets full state
+      // Copy the slice's state back into the scalar 
+      // *fScalarTrackPrng[i] = MRG32k3a<ScalarBackend>(partState);
+      fScalarTrackPrng[i]->CopyState(partState);
       fScalarTrackPrng[i] = nullptr;
    }
    fFullState= false;
@@ -131,8 +133,9 @@ template <typename BackendT>
    // fScalarTrackPrng= new BaseScalarRNGType* [VectorSize<BackendT>] ;
    
    fFullState= false;  // Not
+   constexpr int vecSize= VectorSize<BackendT>();
    MRG32k3a<BackendT>::Initialize(); //  fScalarTrackPrng, BackendT::VectorSize );
-   for( int i= 0; i < BackendT::VectorSize; ++i )
+   for( int i= 0; i < vecSize; ++i )
       fScalarTrackPrng[i] = nullptr;   
 }
 
@@ -158,7 +161,7 @@ template <typename BackendT>
   typename BackendT::Double_v JoiningProxyVecMRG32k3a<BackendT>::Uniform()
 {
    assert( fFullState );
-   MRG32k3a<BackendT>::Uniform();
+   return this->MRG32k3a<BackendT>::template Uniform<BackendT>();
 }
 
 /***
