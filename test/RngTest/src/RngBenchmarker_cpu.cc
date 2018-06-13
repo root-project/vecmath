@@ -4,7 +4,8 @@
 #include "VecMath/Rng/Threefry.h"
 #include "VecMath/Rng/Philox.h"
 
-#include "VecCoreLib/Rng/JoiningProxyVecRNG.h"
+// #include "VecCoreLib/Rng/JoiningProxyVecRNG.h"
+#include "VecCoreLib/Rng/JoiningProxyVecMRG32k3a.h"
 
 // #define NEW_TEST_JOINING_PROXY    1
 
@@ -125,7 +126,7 @@ double VectorMRG32k3a_JoinByHand(int nsample, double& result)
 
   // Stuff the (vector) rng with the contents of the scalar ones !!
    for( int i= 0; i < vsize; ++i )
-      rng.SetPartOfState( scalarRng[i].GetState(), i);
+      rng.SetPartOfState( *scalarRng[i].GetState(), i);
   
   static Timer<nanoseconds> timer;
   double elapsedTime = 0.;
@@ -185,28 +186,32 @@ double VectorMRG32k3a_JoiningProxy(int nsample, double& result)
 
   using ScalarRngType = vecRng::cxx::MRG32k3a<ScalarBackend>;
   
-  static ScalarRngType scalarRng[vsize];
-  static ScalarRngType * arrayScalarRngPtr[vsize];
+  ScalarRngType scalarRng[vsize];
+  ScalarRngType * arrayScalarRngPtr[vsize];
+  std::cout << "Benchmark setup - scalar Rng setup " << std::endl;
   for (int i = 0; i < vsize ; ++i) {  
      scalarRng[i].Initialize(i);
-     arrayScalarRngPtr= & scalarRng[i];
-  }
-  using VectorRngProxyType = JoiningProxyVecRNG< vecRng::cxx::MRG32k3a<VectorBackend>;
+     arrayScalarRngPtr[i]= & scalarRng[i];
 
+     std::cout << " Address [ " << i << " ] = " << arrayScalarRngPtr[i] << " - expected " << scalarRng+i << std::endl;
+  }
+  // using VectorRngProxyType = vecRng::JoiningProxyVecRNG< vecRng::cxx::MRG32k3a<VectorBackend>>;
+  using VectorRngProxyType = vecRng::JoiningProxyVecMRG32k3a<VectorBackend>;
+
+  double elapsedTime = 0.;
   // Create a scope, so see also the copying back of scalar RNGs
   { 
      // Prepare the (vector) proxy rng giving the scalar ones !!
-     VectorRngProxyType rng( arrayScalarRngPtr, vsize );
+     VectorRngProxyType vecRng( arrayScalarRngPtr, vsize );
      
      static Timer<nanoseconds> timer;
-     double elapsedTime = 0.;
      
      Double_v sum = 0.;
      int      ntrials=  nsample/vsize;
      timer.Start();
      
      for (int i = 0; i < ntrials ; ++i) {
-        sum += rng.Uniform<VectorBackend>();
+        sum += vecRng.Uniform();
      }
 
      elapsedTime = timer.Elapsed();
@@ -216,8 +221,10 @@ double VectorMRG32k3a_JoiningProxy(int nsample, double& result)
   using std::cout;
   using std::endl;  
   cout << "Next values: " << endl;
-  for (int i = 0; i < vsize ; ++i) 
-     cout << " [ " << i << " ] " << scalarRng[i].uniform() << endl;
+  for (int i = 0; i < vsize ; ++i) {
+     double value = scalarRng[i].Uniform<ScalarBackend>();
+     cout << " [ " << i << " ] " << value  << endl;
+  }
      
   return elapsedTime;
 }
