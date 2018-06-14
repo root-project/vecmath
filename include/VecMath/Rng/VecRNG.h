@@ -16,13 +16,14 @@ inline namespace VECRNG_IMPL_NAMESPACE {
 
 template <typename DerivedT>
 class RNG_traits;
-  
+
 template <typename DerivedT>
 class VecRNG {
 
 protected:
-  // Use *this to access data members in the derived class
   using State_t = typename RNG_traits<DerivedT>::State_t;
+
+  // Use *this to access data members in the derived class
   State_t *fState;
 
 public:
@@ -87,14 +88,6 @@ public:
 
   VECCORE_ATT_HOST_DEVICE
   State_t* GetState() const { return fState; }
-
-  VECCORE_ATT_HOST_DEVICE
-  void SetStateAt(unsigned int i, State_t *state) 
-  { return static_cast<DerivedT *>(this)->template SetStateAt(i, state); }
-
-  VECCORE_ATT_HOST_DEVICE
-  State_t* GetStateAt(unsigned int i) const 
-  { return static_cast<DerivedT *>(this)->template GetStateAt(i); }
 
   //Common methods
 
