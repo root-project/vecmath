@@ -15,8 +15,8 @@ public:
    using BaseVecRNGType=    MRG32k3a<VectorBackend>; 
    using BaseScalarRNGType= MRG32k3a<ScalarBackend>;
    
-   using BaseRNGState_scalar= typename RNG_traits<BaseVecRNGType> /*<ScalarBackend>>*/ ::State_t;
-   using BaseRNGState_vector= typename RNG_traits<BaseScalarRNGType> /*<VectorBackend>>*/ ::State_t;
+   using BaseRNGState_scalar= typename RNG_traits<BaseScalarRNGType> /*<ScalarBackend>>*/ ::State_t;
+   using BaseRNGState_vector= typename RNG_traits<BaseVecRNGType> /*<VectorBackend>>*/ ::State_t;
    using State_t= BaseRNGState_vector;
 
    /** @brief Constructor: 'create' empty instance - not associated with set of scalar states */
@@ -38,6 +38,12 @@ public:
    VECCORE_ATT_HOST_DEVICE   
    typename BackendT::Double_v Uniform();
 
+   void PrintComponents() const;
+   
+protected:
+   static typename BackendT::Double_v  dbVec;
+   static constexpr int vecSize= VectorSize<decltype(dbVec)>();
+   
 private:
    // Location of track's RNG objects - in order to copy state back
    // BaseScalarRNGType*  fScalarTrackPrng[VectorSize<BackendT>];
@@ -58,7 +64,7 @@ void
    assert( fScalarTrackPrng );
         // If other parameters must be initialised ...
 
-   std::cout << "Locations of per-track PRNG: " << std::endl;
+   // std::cout << "Locations of per-track PRNG: " << std::endl;
    
    for( int i= 0; i < vecSize; ++i ) {
       assert( trackPrng[i] != nullptr );
@@ -67,7 +73,7 @@ void
       // Keep record of locations of per-track PRNG - in order to copy back the final state
       fScalarTrackPrng[i] = trackPrng[i];
 
-      std::cout << " [ " << i << " ] : " << trackPrng[i] << " stored: " << fScalarTrackPrng[i] << std::endl;
+      // std::cout << " [ " << i << " ] : " << trackPrng[i] << " stored: " << fScalarTrackPrng[i] << std::endl;
    }
    fFullState= true;
 }
@@ -76,7 +82,13 @@ void
 template <typename BackendT>
 void JoiningProxyVecMRG32k3a<BackendT>::Split()
 {
-   for( int i= 0; i < VectorSize<BackendT>(); ++i ) {
+   // std::cout << "Split called for object " << this << " State addr = " << this->fState
+   //          << " vecSize= " << vecSize << std::endl;
+   // std::cout << "Split called - vecSize = " << vecSize << std::endl;
+   // PrintComponents(); 
+   for( int i= 0; i < vecSize; ++i ) {
+      // std::cout << " [ " << i << " ] : " << fScalarTrackPrng[i] << std::endl;
+      
       auto partState = MRG32k3a<BackendT>::GetPartOfState(i); // Sets full state
       // Copy the slice's state back into the scalar 
       // *fScalarTrackPrng[i] = MRG32k3a<ScalarBackend>(partState);
@@ -87,10 +99,30 @@ void JoiningProxyVecMRG32k3a<BackendT>::Split()
 }
 
 //  ---------------------------================---------------------------
+
+template <typename BackendT>
+void JoiningProxyVecMRG32k3a<BackendT>::PrintComponents() const
+{
+   const char* typeNameStr = "JoiningProxyVecMRG32k3a< >";
+   std::cout << std::endl;
+   std::cout << "== Printing of JoiningProxVecMRG32k3a PrintComponents():  " << std::endl;
+   std::cout << "===================================================================" << std::endl;
+   std::cout << "Dump of " << typeNameStr << " < Backend with vecSize= " << vecSize
+             << " >  called for object " << this << " State addr = " << this->fState
+             << std::endl;
+   std::cout << " fullState = " << fFullState << std::endl;
+   std::cout << " Contents of scalar RNG addresses: " << std::endl;
+   for( int i= 0; i < vecSize; ++i ) {
+      std::cout << " Addr [ " << i << " ] : " << fScalarTrackPrng[i] << std::endl;
+   }
+   std::cout << "===================================================================" << std::endl;   
+}
+
+//  ---------------------------================---------------------------
 template <typename BackendT>
    JoiningProxyVecMRG32k3a<BackendT>::JoiningProxyVecMRG32k3a()
 {
-   fScalarTrackPrng= new BaseScalarRNGType* [VectorSize<BackendT>()] ;
+   fScalarTrackPrng= new BaseScalarRNGType* [vecSize];
    
    fFullState= false;  // Not
    constexpr int vecSize= VectorSize<BackendT>();
@@ -107,7 +139,7 @@ template <typename BackendT>
    MRG32k3a<BackendT>::Initialize();
    fFullState= false;
    
-   fScalarTrackPrng= new BaseScalarRNGType* [VectorSize<BackendT>()] ;
+   fScalarTrackPrng= new BaseScalarRNGType* [vecSize];   
    Join( trackPrng, numStates );
 }
 
