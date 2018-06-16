@@ -105,6 +105,16 @@ public:
   VECCORE_ATT_HOST_DEVICE 
   typename ReturnTypeBackendT::Double_v Kernel(State_t& state);
 
+  //Copy a scalar state explicitly to the i-th lane of the vector state
+  VECCORE_FORCE_INLINE
+  VECCORE_ATT_HOST_DEVICE
+  void SetStateAt(unsigned int i, State_s *state); 
+
+  //Return the ith-lane of the vector state to a scalar state
+  VECCORE_FORCE_INLINE
+  VECCORE_ATT_HOST_DEVICE
+  State_s GetStateAt(unsigned int i);
+
   // Auxiliary methods
 
   VECCORE_ATT_HOST
@@ -501,6 +511,39 @@ void Philox<BackendT>::Gen(R123::array_t<BackendT,4> ctr,
   }
 }
 
+//Copy a scalar state to at the ith-lane of the vector state
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE
+void Philox<VectorBackend>::SetStateAt(unsigned int i, State_s *state) {
+  for(int j=0 ; j < 2 ; ++j) {
+    this->fState->key[j][i] = state->key[j];
+  }
+  for(int j=0 ; j < 4 ; ++j) {
+    this->fState->ctr[j][i] = state->key[j];
+    this->fState->ukey[j][i] = state->key[j];
+  }
+}
+
+//Return the ith-lane of the vector state to a scalar state
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE
+Philox<VectorBackend>::State_s Philox<VectorBackend>::GetStateAt(unsigned int i) 
+{ 
+  State_s state;
+
+  for(int j = 0 ; j < 2 ; ++j) {
+    state.key[j]= this->fState->key[j][i];
+  }
+  for(int j = 0 ; j < 4 ; ++j) {
+    state.ctr[j]= this->fState->ctr[j][i];
+    state.ukey[j]= this->fState->ukey[j][i];
+  }
+
+  return state;
+} 
+ 
 } // end namespace impl
 } // end namespace vecRng
 

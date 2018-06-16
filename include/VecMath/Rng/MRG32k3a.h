@@ -97,11 +97,11 @@ public:
   typename ReturnTypeBackendT::Double_v Kernel(State_t& state);
 
   //Copy a scalar state explicitly to the i-th lane of the vector state
-
   VECCORE_FORCE_INLINE
   VECCORE_ATT_HOST_DEVICE
   void SetStateAt(unsigned int i, State_s *state); 
 
+  //Return the ith-lane of the vector state to a scalar state
   VECCORE_FORCE_INLINE
   VECCORE_ATT_HOST_DEVICE
   State_s GetStateAt(unsigned int i);

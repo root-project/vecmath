@@ -108,6 +108,16 @@ public:
   VECCORE_FORCE_INLINE
   typename ReturnTypeBackendT::Double_v Kernel(State_t& state);
 
+  //Copy a scalar state explicitly to the i-th lane of the vector state
+  VECCORE_FORCE_INLINE
+  VECCORE_ATT_HOST_DEVICE
+  void SetStateAt(unsigned int i, State_s *state); 
+
+  //Return the ith-lane of the vector state to a scalar state
+  VECCORE_FORCE_INLINE
+  VECCORE_ATT_HOST_DEVICE
+  State_s GetStateAt(unsigned int i);
+
   // Auxiliary methods
   
   VECCORE_ATT_HOST
@@ -493,6 +503,35 @@ void Threefry<BackendT>::Gen(R123::array_t<BackendT,4> in,
   BijectAndShuffle(X,ks,0,5);
 }
 
+//Copy a scalar state to at the ith-lane of the vector state
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE
+void Threefry<VectorBackend>::SetStateAt(unsigned int i, State_s *state) {
+  for(int j=0 ; j < 4 ; ++j) {
+    this->fState->ctr[j][i] = state->key[j];
+    this->fState->key[j][i] = state->key[j];
+    this->fState->ukey[j][i] = state->key[j];
+  }
+}
+
+//Return the ith-lane of the vector state to a scalar state
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE
+Threefry<VectorBackend>::State_s Threefry<VectorBackend>::GetStateAt(unsigned int i) 
+{ 
+  State_s state;
+
+  for(int j = 0 ; j < 4 ; ++j) {
+    state.ctr[j]= this->fState->ctr[j][i];
+    state.key[j]= this->fState->key[j][i];
+    state.ukey[j]= this->fState->ukey[j][i];
+  }
+
+  return state;
+} 
+ 
 } // end namespace impl
 } // end namespace vecRng
 
