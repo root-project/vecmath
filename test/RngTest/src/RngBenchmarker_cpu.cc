@@ -282,7 +282,7 @@ double VectorMRG32k3a_JoiningProxyExplicit(int nsample, double& result)
 
   cout << "Next values: " << endl;
   for (int i = 0; i < vsize ; ++i) {
-     double value = scalarRng[i].NativeUniform(); // Uniform<ScalarBackend>();
+     double value = scalarRng[i].Uniform<ScalarBackend>();
      cout << " [ " << i << " ] " << value  << endl;
   }
      

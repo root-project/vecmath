@@ -23,10 +23,13 @@ ScalarKernelFunc_t ScalarKernelFunc[] = {ScalarMRG32k3a, ScalarThreefry, ScalarP
 typedef Real_t (*VectorKernelFunc_t)(int nsample, double& result);
 
 Real_t VectorMRG32k3a(int nsample, double& result);
+// Real_t VectorJoiningMRG32k3a(int nsample, double& result);
 Real_t VectorThreefry(int nsample, double& result);
 Real_t VectorPhilox(int nsample, double& result);
 
-VectorKernelFunc_t VectorKernelFunc[] = {VectorMRG32k3a, VectorThreefry, VectorPhilox};
+VectorKernelFunc_t VectorKernelFunc[] = {VectorMRG32k3a,
+                                         // VectorJoiningMRG32k3a,
+                                         VectorThreefry, VectorPhilox};
 
 // Scalar-States (comparision to GPU code)
 
