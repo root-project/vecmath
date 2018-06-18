@@ -9,8 +9,8 @@
 #include <iostream>
 
 #include "RngTest.h"
-#include "VecRng/MRG.h"
-#include "VecRng/MRG32k3a.h"
+#include "VecMath/Rng/MRG.h"
+#include "VecMath/Rng/MRG32k3a.h"
 
 using namespace vecrng;
 
@@ -89,10 +89,10 @@ int main(int argc, char *argv[])
   CheckSum(mean, sigma, bvsum);
 
   // 4. scatter the new vector state back to scalar rngs
-  scalarRNG::State_t *sstate = new scalarRNG::State_t [vsize];
   for (int j = 0; j < vsize ; ++j) {
-    sstate[j] = vrng->GetStateAt(j);
-    srng[j].SetState(&sstate[j]);
+    scalarRNG::State_t sstate;
+    sstate = vrng->GetStateAt(j);
+    srng[j].SetState(&sstate);
   }
 
   // generate scalar random numbers

@@ -1,7 +1,7 @@
 #ifndef PDF_BENCHMARKER_GPU_H
 #define PDF_BENCHMARKER_GPU_H 1
 
-#include "VecRng/MRG32k3a.h"
+#include "VecMath/Rng/MRG32k3a.h"
 
 #include <curand_kernel.h>
 
