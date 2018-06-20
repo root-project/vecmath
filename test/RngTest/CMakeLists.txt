@@ -351,6 +351,7 @@ set(TEST_EXECUTABLES
 # Add executables testing only for HOST
 if (NOT RNGTEST_CUDA)
   set(TEST_EXECUTABLES
+    ${TEST_EXECUTABLES}
     ${PROJECT_SOURCE_DIR}/src/RngExample1.cc
   )
 endif()
@@ -365,6 +366,7 @@ macro(build_executables EXECUTABLES)
     target_link_libraries(${TARGET_NAME} ${RNGTEST_LIBRARIES}
                           ${RNGTEST_LIBRARIES_EXTERNAL})
     set(RNGTEST_EXECUTABLES ${RNGTEST_EXECUTABLES} ${TARGET_NAME})
+    message(STATUS "Added ${TARGET_NAME} to RNG executables")
   endforeach()
 endmacro()
 
