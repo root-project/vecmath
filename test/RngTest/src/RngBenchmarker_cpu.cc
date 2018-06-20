@@ -4,8 +4,7 @@
 #include "VecMath/Rng/Threefry.h"
 #include "VecMath/Rng/Philox.h"
 
-// #include "VecCoreLib/Rng/JoiningProxyVecRNG.h"
-#include "VecCoreLib/Rng/JoiningProxyVecMRG32k3a.h"
+#include "VecMath/Rng/JoiningProxyVecMRG32k3a.h"
 
 // #define NEW_TEST_JOINING_PROXY    1
 

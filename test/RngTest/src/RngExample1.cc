@@ -9,8 +9,8 @@
 #include <iostream>
 
 #include "RngTest.h"
-#include "VecRng/MRG.h"
-#include "VecRng/MRG32k3a.h"
+#include "VecMath/Rng/MRG.h"
+#include "VecMath/Rng/MRG32k3a.h"
 
 using namespace vecrng;
 
