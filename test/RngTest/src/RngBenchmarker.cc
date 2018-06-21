@@ -34,11 +34,13 @@ int RngBenchmarker::RunBenchmarkRng()
   }
 
   RunTest();
+  std::cout << " ---- Running Scalar()\n";  
   RunScalar();
-  std::cout << " Running Vector()  - ie. type 1 \n";
+  std::cout << " ---- Running Vector()  - ie. type 1 \n";
   RunVector();
-  std::cout << " Running Vector2() - ie. type 2 \n";  
+  std::cout << " ---- Running Vector2() - ie. type 2 \n";  
   RunVector2();
+  std::cout << " ---- Running NState()\n";  
   RunNState();
 
 #ifdef RNGTEST_MKL
@@ -84,28 +86,13 @@ void RngBenchmarker::RunTest()
       result += (double)rand()/RAND_MAX;
     }
     double time = timer.Elapsed();
-#ifdef OLDVAR    
-    trialTime[r] = time; // timer.Elapsed();
-#endif
     elapsedTotal += time;
     elapsedTotSq += time * time;
     resultTotal += result;
   }
 
   double meanTime = elapsedTotal/fRepetition;
-
-  double sigmaTime= 0.0;
-#ifdef OLDVAR
-  double sumDiff = 0;  
-  for (unsigned r = 0; r < fRepetition; ++r) {
-    double delta  = (trialTime[r] - meanTime);
-    sumDiff += delta*delta;
-  }
-  delete [] trialTime;
-  sigmaTime = sqrt(sumDiff/fRepetition);
-#else    
-  sigmaTime = variance( elapsedTotal, elapsedTotSq, fRepetition );
-#endif  
+  double sigmaTime= variance( elapsedTotal, elapsedTotSq, fRepetition );
 
   printf(" %s std::rand()   Time = %4.3f +- %4.3f msec Sum = %g", // \n", 
 	 "TestRand ", meanTime*1E-6, sigmaTime*1E-6, resultTotal);
@@ -122,7 +109,7 @@ void RngBenchmarker::RunScalar()
   double varncTime[kNumberRng];
   
   double result = 0;
-  double *trialTime = new double [fRepetition];;
+  // double *trialTime = new double [fRepetition];;
 
   for (unsigned int k = 0; k < kNumberRng ; ++k) {
 
@@ -134,42 +121,32 @@ void RngBenchmarker::RunScalar()
     double elapsedTotal = 0.0, elapsedTotalSq = 0.0;
 
     for (unsigned r = 0; r < fRepetition; ++r) {
-      trialTime[r] = 0.0;
+       // trialTime[r] = 0.0;
       result = 0.0;
-      trialTime[r] = ScalarKernelFunc[k](fNSample,result);
-      elapsedTotal += trialTime[r];
-      elapsedTotalSq += trialTime[r] * trialTime[r];
+      double time = ScalarKernelFunc[k](fNSample,result);
+      elapsedTotal += time;
+      elapsedTotalSq += time * time;
       resultTotal[k] += result;
     }
 
     meanTime[k] = elapsedTotal/fRepetition;
-    double sumDiff = 0;
+    sigmaTime[k] = variance( elapsedTotal, elapsedTotalSq, fRepetition );       
+    // varncTime[k] = sqrt( elapsedTotalSq/fRepetition - meanTime[k] * meanTime[k] );
 
-    for (unsigned r = 0; r < fRepetition; ++r) {
-      double delta  = (trialTime[r] - meanTime[k]);
-      sumDiff += delta*delta;
+    printf(" %-15s  ScalarBackend Time = ", RngName[k] );
+    if( meanTime[k]*1E-6 > 0.1 ) {
+      const double msMult = 1.e-6; // millisecond per nanosec
+      printf( "%4.3f +- %4.3f msec ", 
+              meanTime[k]*msMult, sigmaTime[k]*msMult );
+      // printf( " ( sig = %4.3f msec )", varncTime[k]*msMult );        
+    } else {
+      const double usMult = 1.e-3; // micro-sec per ns 
+      printf( "%4.3f +- %4.3f usec ",
+              meanTime[k]*usMult, sigmaTime[k]*usMult );
+      // printf( " ( sig = %4.3f usec )", varncTime[k]*usMult );
     }
-    sigmaTime[k] = sqrt(sumDiff/fRepetition);
-    varncTime[k] = sqrt( elapsedTotalSq/fRepetition - meanTime[k] * meanTime[k] );
+    printf( "Sum = %g\n", resultTotal[k]);
   }
-
-  for (int k = 0; k < kNumberRng; ++k) {
-     printf(" %-15s  ScalarBackend Time = ", RngName[k] );
-     if( meanTime[k]*1E-6 > 0.1 ) {
-        const double msMult = 1.e-6; // millisecond per nanosec
-        printf( "%4.3f +- %4.3f msec ", 
-                meanTime[k]*msMult, sigmaTime[k]*msMult );
-        printf( " ( sig = %4.3f msec )", varncTime[k]*msMult );        
-     } else {
-        const double usMult = 1.e-3; // micro-sec per ns 
-        printf( "%4.3f +- %4.3f usec ",
-                meanTime[k]*usMult, sigmaTime[k]*usMult );
-        printf( " ( sig = %4.3f usec )", varncTime[k]*usMult );
-     }
-     printf( "Sum = %g\n", resultTotal[k]);
-  }
-
-  delete [] trialTime;
 }
 
 // Vector 
@@ -180,7 +157,7 @@ void RngBenchmarker::RunVector()
   double resultTotal[kNumberVectorRng];
 
   double result = 0;
-  double *trialTime = new double [fRepetition];;
+  // double *trialTime = new double [fRepetition];;
 
   for (unsigned int k = 0; k < kNumberVectorRng ; ++k) {
 
@@ -190,29 +167,19 @@ void RngBenchmarker::RunVector()
 
     //std::cout << "RunVector> k= " << k << " VecRNG is " << VecRngName[k] << std::endl;
     
-    double elapsedTotal = 0.0;
-
+    double elapsedTotal = 0.0, elapsedTotalSq = 0.0;
+    
     for (unsigned r = 0; r < fRepetition; ++r) {
-      trialTime[r] = 0.0;
+      // trialTime[r] = 0.0;
       result = 0.0;
-      trialTime[r] = VectorKernelFunc[k](fNSample,result);
-      elapsedTotal += trialTime[r];
+      double time = VectorKernelFunc[k](fNSample,result);
+      elapsedTotal += time;
+      elapsedTotalSq += time * time;
       resultTotal[k] += result;
     }
 
     meanTime[k] = elapsedTotal/fRepetition;
-    double sumDiff = 0;
-
-    for (unsigned r = 0; r < fRepetition; ++r) {
-      double delta  = (trialTime[r] - meanTime[k]);
-      sumDiff += delta*delta;
-    }
-    sigmaTime[k] = sqrt(sumDiff/fRepetition);   
-  // }
-
-  // for (int k = 0; k < kNumberVectorRng; ++k) {
-    // printf(" %-15s  VectorBackend Time = %4.3f +- %4.3f msec Sum = %g\n", 
-    //	   VecRngName[k], meanTime[k]*1E-6, sigmaTime[k]*1E-6, resultTotal[k]);
+    sigmaTime[k] = variance( elapsedTotal, elapsedTotalSq, fRepetition );
 
     printf(" %-15s  VectorBackend Time = ", VecRngName[k] );
     if( meanTime[k]*1E-6 > 0.1 ) {
@@ -226,8 +193,6 @@ void RngBenchmarker::RunVector()
     }
     printf( "Sum = %g\n", resultTotal[k]);
   }
-    
-  delete [] trialTime;
 }
 
 // Vector 
@@ -236,9 +201,7 @@ void RngBenchmarker::RunVector2()
   double meanTime[numVecKnlFuncs];
   double sigmaTime[numVecKnlFuncs];
   double resultTotal[numVecKnlFuncs];
-
   double result = 0;
-  double *trialTime = new double [fRepetition];;
 
   for (unsigned int k = 0; k < numVecKnlFuncs ; ++k) {
 
@@ -246,31 +209,23 @@ void RngBenchmarker::RunVector2()
     sigmaTime[k] = 0.;
     resultTotal[k] = 0.;
 
-    double elapsedTotal = 0.0;
+    double elapsedTotal = 0.0, elapsedTotSq = 0.0;
     auto funcAndName = VectorKnlFuncAndName[k];
     auto func= std::get<0>(funcAndName); // first();
     // auto name=  std::get<std::string>(funcAndName);  // funcAndName.second();
     for (unsigned r = 0; r < fRepetition; ++r) {
-      trialTime[r] = 0.0;
       result = 0.0;
       // trialTime[r] = VectorKernelFunc[k](fNSample,result);
-      trialTime[r] = func(fNSample,result);
-      elapsedTotal += trialTime[r];
+      // trialTime[r] = func(fNSample,result);
+      double oneTm = func(fNSample,result);
+      elapsedTotal += oneTm; // trialTime[r];
+      elapsedTotSq += oneTm * oneTm;
       resultTotal[k] += result;
     }
 
     meanTime[k] = elapsedTotal/fRepetition;
-    double sumDiff = 0;
+    sigmaTime[k]= variance( elapsedTotal, elapsedTotSq, fRepetition );
 
-    for (unsigned r = 0; r < fRepetition; ++r) {
-      double delta  = (trialTime[r] - meanTime[k]);
-      sumDiff += delta*delta;
-    }
-    sigmaTime[k] = sqrt(sumDiff/fRepetition);   
-  // }
-
-  // for (int k = 0; k < numVecKnlFuncs; ++k) {
-    // auto funcAndName = VectorKnlFuncAndName[k];
     std::string funcName=  std::get<1 /*std::string*/ >(funcAndName);  // funcAndName.second();    
     // printf(" %-15s  VectorBackend #2 Time = %4.3f +- %4.3f msec Sum = %g\n",
     //        funcName.c_str(),  meanTime[k]*1E-6, sigmaTime[k]*1E-6, resultTotal[k]);
@@ -289,7 +244,6 @@ void RngBenchmarker::RunVector2()
     printf( "Sum = %g\n", resultTotal[k]);
     
   }
-  delete [] trialTime;
 }
 
    
@@ -330,8 +284,13 @@ void RngBenchmarker::RunNState()
   delete [] trialTime;
 
   for (int k = 0; k < kNumberRng; ++k) {
-    printf(" %s  ScalarNstates Time = %4.3f +- %4.3f msec Sum = %g\n", 
-    RngName[k], meanTime[k]*1E-6, sigmaTime[k]*1E-6, resultTotal[k]);
+    if( meanTime[k]*1E-6 > 0.1 ) {     
+       printf(" %-15s  ScalarNstates Time = %4.3f +- %4.3f msec Sum = %g\n", 
+              RngName[k], meanTime[k]*1E-6, sigmaTime[k]*1E-6, resultTotal[k]);
+    } else {
+       printf(" %-15s  ScalarNstates Time = %4.3f +- %4.3f usec Sum = %g\n", 
+              RngName[k], meanTime[k]*1E-3, sigmaTime[k]*1E-3, resultTotal[k]);
+    }
   }
 }
 
@@ -373,7 +332,7 @@ void RngBenchmarker::RunMKLVSL()
   delete [] trialTime;
 
   for (int k = 0; k < kNumberVsl; ++k) {
-    printf(" %s  Intel-MKL/VSL Time = %3.3f +- %3.3f msec Sum = %g\n", 
+    printf(" %-15s  Intel-MKL/VSL Time = %3.3f +- %3.3f msec Sum = %g\n", 
     VslName[k], meanTime[k]*1E-6, sigmaTime[k]*1E-6, resultTotal[k]);
   }
 }
