@@ -23,13 +23,34 @@ ScalarKernelFunc_t ScalarKernelFunc[] = {ScalarMRG32k3a, ScalarThreefry, ScalarP
 typedef Real_t (*VectorKernelFunc_t)(int nsample, double& result);
 
 Real_t VectorMRG32k3a(int nsample, double& result);
-// Real_t VectorJoiningMRG32k3a(int nsample, double& result);
 Real_t VectorThreefry(int nsample, double& result);
 Real_t VectorPhilox(int nsample, double& result);
 
+Real_t VectorJoiningMRG32k3a(int nsample, double& result);
+// Real_t VectorJoiningRng_MRG32k3a(int nsample, double& result);
+// Real_t VectorJoiningRng_ThreeFry(int nsample, double& result);
+
 VectorKernelFunc_t VectorKernelFunc[] = {VectorMRG32k3a,
-                                         // VectorJoiningMRG32k3a,
-                                         VectorThreefry, VectorPhilox};
+                                         VectorJoiningMRG32k3a,
+                                         VectorThreefry,
+                                         VectorPhilox};
+
+using FuncAndName = std::pair< VectorKernelFunc_t, std::string>;
+
+// std::vector< FuncAndName >
+FuncAndName VectorKnlFuncAndName[] = {
+   { VectorMRG32k3a,            "VectorMRG32k3a" },
+   { VectorJoiningMRG32k3a,     "VectorJoiningMRG32k3a" },
+// #ifdef NEW_TEST_JOINING_PROXY   
+//    { VectorJoiningRng_MRG32k3a, "VectorJoiningRng_MRG32k3a" },
+// //  { VectorJoiningRng_ThreeFry, "VectorJoiningRng_ThreeFry" },
+// #endif   
+   { VectorThreefry,            "VectorThreefry" },
+   { VectorPhilox,              "VectorPhilox" }
+ };
+constexpr int numVecKnlFuncs= 4; // Number of elements of VectorKnlFuncAndName[];
+
+// for (auto funcAndName : VectorKnlFuncAndName )
 
 // Scalar-States (comparision to GPU code)
 

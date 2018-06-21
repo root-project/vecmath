@@ -8,12 +8,12 @@ namespace vecrng {
 enum RngIndex { kNullRng = -1, kMRG32k3a, kThreefry, kPhilox, kNumberRng };
 static const char *RngName[kNumberRng] = {"MRG32k3a", "Threefry", "Philox  "};
 
-#ifdef MULTI_RNG_INDEX
-enum   MultiplexVecRngIndex { kNullRng = -1, kMRG32k3a, kJoiningMRG32k3a,
-                              kThreefry, kPhilox, kNumberRng };
-static const char *MultiRngName[kNumberRng] = {"MRG32k3a", "JoiningMRG32k3a",
-                                               "Threefry", "Philox  "};
-#endif
+// #ifdef MULTI_RNG_INDEX
+enum   MultiplexVecRngIndex { kNullVecRng = -1, kVecMRG32k3a, kJoiningMRG32k3a,
+                              kVecThreefry, kVecPhilox, kNumberVectorRng };
+static const char *VecRngName[kNumberVectorRng] = {"MRG32k3a", "JoiningMRG32k3a",
+                                                   "Threefry", "Philox  " };
+// #endif
 
 #ifdef RNGTEST_MKL
   enum VslIndex { kNullVsl = -1, kMRG32K3A, kMCG59, kMT17739, kSFMT17739, kGFSR250, kSOBOL32, kNumberVsl };
@@ -39,6 +39,9 @@ private:
   void RunVector();
   void RunNState();
 
+  // Alternative / experimental
+  void RunVector2();  
+  
 #ifdef RNGTEST_MKL
   void RunMKLVSL();
 #endif

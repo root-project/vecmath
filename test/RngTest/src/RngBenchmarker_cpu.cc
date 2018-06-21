@@ -9,7 +9,7 @@
 // #define NEW_TEST_JOINING_PROXY    1
 
 #ifdef NEW_TEST_JOINING_PROXY
-#include "VecCoreLib/Rng/JoiningProxyVecRNG.h"
+#include "VecMath/Rng/JoiningProxyVecRNG.h"
 #endif
 
 #ifdef RNGTEST_MKL
@@ -141,16 +141,21 @@ double VectorMRG32k3a_JoinByHand(int nsample, double& result)
   elapsedTime = timer.Elapsed();
   for (int i = 0; i < vsize ; ++i) result += sum[i];
 
+  /***
   using std::cout; using std::endl;
-  cout << "Next values: " << endl;
-  for (int i = 0; i < vsize ; ++i) 
-     cout << " [ " << i << " ] " << scalarRng[i].Uniform<ScalarBackend>() << endl;
+  bool printNext= false;   
+  if( printNext ) { 
+    cout << "Next values: " << endl;
+    for (int i = 0; i < vsize ; ++i) 
+       cout << " [ " << i << " ] " << scalarRng[i].Uniform<ScalarBackend>() << endl;
+  }
+  ***/
   
   return elapsedTime;
 }
 // #else
 // ---------------============================------------------------------------------
-double VectorMRG32k3a_Basic(int nsample, double& result)
+double VectorMRG32k3a /* _Basic */ (int nsample, double& result)
 {
   // Vector MRG32k3a
   using Double_v = typename VectorBackend::Double_v;
@@ -189,12 +194,12 @@ double VectorMRG32k3a_JoiningProxyAuto(int nsample, double& result)
   
   ScalarRngType scalarRng[vsize];
   ScalarRngType * arrayScalarRngPtr[vsize];
-  std::cout << "Benchmark setup - scalar Rng setup " << std::endl;
+  // std::cout << "Benchmark setup - scalar Rng setup " << std::endl;
   for (int i = 0; i < vsize ; ++i) {  
      scalarRng[i].Initialize(i);
      arrayScalarRngPtr[i]= & scalarRng[i];
 
-     std::cout << " Address [ " << i << " ] = " << arrayScalarRngPtr[i] << " - expected " << scalarRng+i << std::endl;
+     // std::cout << " Address [ " << i << " ] = " << arrayScalarRngPtr[i] << " - expected " << scalarRng+i << std::endl;
   }
   // using VectorRngProxyType = vecRng::JoiningProxyVecRNG< vecRng::cxx::MRG32k3a<VectorBackend>>;
   using VectorRngProxyType = vecRng::JoiningProxyVecMRG32k3a<VectorBackend>;
@@ -219,6 +224,7 @@ double VectorMRG32k3a_JoiningProxyAuto(int nsample, double& result)
      for (int i = 0; i < vsize ; ++i) result += sum[i];
   }
 
+  /***
   using std::cout;
   using std::endl;  
   cout << "Next values: " << endl;
@@ -226,7 +232,8 @@ double VectorMRG32k3a_JoiningProxyAuto(int nsample, double& result)
      double value = scalarRng[i].Uniform<ScalarBackend>();
      cout << " [ " << i << " ] " << value  << endl;
   }
-     
+  **/
+  
   return elapsedTime;
 }
 
@@ -242,16 +249,16 @@ double VectorMRG32k3a_JoiningProxyExplicit(int nsample, double& result)
   using std::cout;
   using std::endl;
   
-  cout << "Test of VectorMRG32k3a, version 'JoiningProxyExplicit' called - nsamples = " << nsample << endl;
+  // cout << "Test of VectorMRG32k3a, version 'JoiningProxyExplicit' called - nsamples = " << nsample << endl;
   
   ScalarRngType scalarRng[vsize];
   ScalarRngType * arrayScalarRngPtr[vsize];
-  std::cout << "Benchmark setup - scalar Rng setup " << std::endl;
+  // std::cout << "Benchmark setup - scalar Rng setup " << std::endl;
   for (int i = 0; i < vsize ; ++i) {  
      scalarRng[i].Initialize(i);
      arrayScalarRngPtr[i]= & scalarRng[i];
 
-     std::cout << " Address [ " << i << " ] = " << arrayScalarRngPtr[i] << " - expected " << scalarRng+i << std::endl;
+     // std::cout << " Address [ " << i << " ] = " << arrayScalarRngPtr[i] << " - expected " << scalarRng+i << std::endl;
   }
   // using VectorRngProxyType = vecRng::JoiningProxyVecRNG< vecRng::cxx::MRG32k3a<VectorBackend>>;
   using VectorRngProxyType = vecRng::JoiningProxyVecMRG32k3a<VectorBackend>;
@@ -276,21 +283,100 @@ double VectorMRG32k3a_JoiningProxyExplicit(int nsample, double& result)
      elapsedTime = timer.Elapsed();
      for (int i = 0; i < vsize ; ++i) result += sum[i];
   }
-  cout << " Calling Split() " << endl;
+  // cout << " Calling Split() " << endl;
   vecRng.Split();
 
+  /**
   cout << "Next values: " << endl;
   for (int i = 0; i < vsize ; ++i) {
      double value = scalarRng[i].Uniform<ScalarBackend>();
      cout << " [ " << i << " ] " << value  << endl;
   }
-     
+  **/
+  
   return elapsedTime;
 }
 
 // ---------------============================------------------------------------------
    
-double VectorMRG32k3a(int nsample, double& result)
+double VectorJoiningMRG32k3a(int nsample, double& result)
+{
+   double time=0.0;
+   // std::cout << "Test of VectorMRG32k3a called - nsamples = " << nsample << std::endl;
+   time=
+      // VectorMRG32k3a_Basic(nsample, result);
+      // VectorMRG32k3a_JoinByHand(nsample, result);      
+      // VectorMRG32k3a_JoiningProxyAuto(nsample, result);
+         VectorMRG32k3a_JoiningProxyExplicit(nsample, result);      
+   
+   return time;
+}
+
+// ---------------============================------------------------------------------
+#ifdef NEW_TEST_JOINING_PROXY
+double VectorJoiningVecRng_MRG32k3a(int nsample, double& result)
+{
+  double time=0.0;
+  std::cout << "Test of VectorMRG32k3a called - nsamples = " << nsample << std::endl;
+
+  // Vector MRG32k3a
+  using Double_v = typename VectorBackend::Double_v;
+  constexpr int vsize = VectorSize<Double_v>();
+
+  using ScalarRngType = vecRng::cxx::MRG32k3a<ScalarBackend>;
+
+  std::cout << "VectorMRG32k3a_JoiningProxy() called - vectorSize= " << vsize
+            << " nsamples = " << nsample << std::endl;
+
+  ScalarRngType scalarRng[vsize];
+  ScalarRngType * arrayScalarRngPtr[vsize];
+  // std::cout << "Benchmark setup - scalar Rng setup " << std::endl;
+  for (int i = 0; i < vsize ; ++i) {  
+     scalarRng[i].Initialize(i);
+     arrayScalarRngPtr[i]= & scalarRng[i];
+
+     // std::cout << " Address [ " << i << " ] = " << arrayScalarRngPtr[i] << " - expected " << scalarRng+i << std::endl;
+  }
+  // using VectorRngProxyType = vecRng::JoiningProxyVecRNG< vecRng::cxx::MRG32k3a<VectorBackend>>;
+  using VectorRngProxyType = vecRng::JoiningProxyVecRNG<vecRng::MRG32k3a<VectorBackend>,
+                                                        vecRng::MRG32k3a<ScalarBackend>,
+                                                        VectorBackend>;
+  double elapsedTime = 0.;
+  // Create a scope, so see also the copying back of scalar RNGs
+  { 
+     // Prepare the (vector) proxy rng giving the scalar ones !!
+     VectorRngProxyType vecRng( arrayScalarRngPtr, vsize );
+     
+     static Timer<nanoseconds> timer;
+     
+     Double_v sum = 0.;
+     int      ntrials=  nsample/vsize;
+     timer.Start();
+     
+     for (int i = 0; i < ntrials ; ++i) {
+        sum += vecRng.Uniform();
+     }
+
+     elapsedTime = timer.Elapsed();
+     for (int i = 0; i < vsize ; ++i) result += sum[i];
+  }
+
+  /**
+  using std::cout;
+  using std::endl;  
+  cout << "Next values: " << endl;
+  for (int i = 0; i < vsize ; ++i) {
+     double value = scalarRng[i].Uniform<ScalarBackend>();
+     cout << " [ " << i << " ] " << value  << endl;
+  }
+  **/
+  
+  return elapsedTime;   
+}
+#endif
+// ---------------============================------------------------------------------
+   
+double VectorJoiningMRG32k3a_mux(int nsample, double& result)
 {
    double time=0.0;
    std::cout << "Test of VectorMRG32k3a called - nsamples = " << nsample << std::endl;
@@ -302,6 +388,7 @@ double VectorMRG32k3a(int nsample, double& result)
    
    return time;
 }
+
 // ---------------============================------------------------------------------
 
 double VectorThreefry(int nsample, double& result)
