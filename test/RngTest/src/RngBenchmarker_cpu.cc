@@ -475,6 +475,7 @@ double StateMRG32k3a(int nsample, double& result)
   elapsedTime = timer.Elapsed();
   result = sum;
 
+  free( hstates );
   return elapsedTime;
 }
 
@@ -508,6 +509,7 @@ double StateThreefry(int nsample, double& result)
   elapsedTime = timer.Elapsed();
   result = sum;
 
+  free( hstates );
   return elapsedTime;
 }
 
@@ -542,6 +544,7 @@ double StatePhilox(int nsample, double& result)
   elapsedTime = timer.Elapsed();
   result = sum;
 
+  free( hstates );
   return elapsedTime;
 }
 
