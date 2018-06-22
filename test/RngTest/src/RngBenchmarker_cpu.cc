@@ -263,39 +263,35 @@ double VectorMRG32k3a_JoiningProxyExplicit(int nsample, double& result)
   // using VectorRngProxyType = vecRng::JoiningProxyVecRNG< vecRng::cxx::MRG32k3a<VectorBackend>>;
   using VectorRngProxyType = vecRng::JoiningProxyVecMRG32k3a<VectorBackend>;
 
-  VectorRngProxyType vecRng;
+  // Prepare the (vector) proxy rng giving the scalar ones !!
+  static Timer<nanoseconds> timer;
+
+  static VectorRngProxyType vecRng;
+  
+  timer.Start();
   vecRng.Join( arrayScalarRngPtr, vsize );
   
   double elapsedTime = 0.;
   // Create a scope, so see also the copying back of scalar RNGs
-  { 
-     // Prepare the (vector) proxy rng giving the scalar ones !!
-     static Timer<nanoseconds> timer;
-     
-     Double_v sum = 0.;
-     int      ntrials=  nsample/vsize;
-     timer.Start();
-     
-     for (int i = 0; i < ntrials ; ++i) {
-        sum += vecRng.Uniform();
-     }
 
-     elapsedTime = timer.Elapsed();
-     for (int i = 0; i < vsize ; ++i) result += sum[i];
+  Double_v sum = 0.;
+  int      ntrials=  nsample/vsize;
+
+  for (int i = 0; i < ntrials ; ++i) {
+     sum += vecRng.Uniform();
   }
+  
+  elapsedTime = timer.Elapsed();
+  
+  for (int i = 0; i < vsize ; ++i) result += sum[i];
+
   // cout << " Calling Split() " << endl;
   vecRng.Split();
 
-  /**
-  cout << "Next values: " << endl;
-  for (int i = 0; i < vsize ; ++i) {
-     double value = scalarRng[i].Uniform<ScalarBackend>();
-     cout << " [ " << i << " ] " << value  << endl;
-  }
-  **/
-  
   return elapsedTime;
 }
+
+
 
 // ---------------============================------------------------------------------
    
