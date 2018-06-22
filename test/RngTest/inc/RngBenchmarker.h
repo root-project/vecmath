@@ -41,6 +41,15 @@ private:
 
   // Alternative / experimental
   void RunVector2();  
+
+  // Auxiliary methods
+  double variance( double sumValues, double sumSquares, int repetitions );
+  void PrintReport(const char* method, const char* version, double meanTime,
+                   double sigmaTime, double resultTotal, bool bestUnit= false );
+  void ProcessAndPrint( const char* method,  const char* version,
+                        double elapsedTotal, double elapsedTotSq,
+                     // int    nRepetition,  int    nSamples,
+                        double resultTotal );
   
 #ifdef RNGTEST_MKL
   void RunMKLVSL();

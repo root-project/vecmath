@@ -26,6 +26,8 @@ Real_t VectorMRG32k3a(int nsample, double& result);
 Real_t VectorThreefry(int nsample, double& result);
 Real_t VectorPhilox(int nsample, double& result);
 
+Real_t VectorMRG32k3a_JoinByHand(int nsample, double& result);
+   
 Real_t VectorJoiningMRG32k3a(int nsample, double& result);
 // Real_t VectorJoiningRng_MRG32k3a(int nsample, double& result);
 // Real_t VectorJoiningRng_ThreeFry(int nsample, double& result);
@@ -39,16 +41,17 @@ using FuncAndName = std::pair< VectorKernelFunc_t, std::string>;
 
 // std::vector< FuncAndName >
 FuncAndName VectorKnlFuncAndName[] = {
-   { VectorMRG32k3a,            "VectorMRG32k3a" },
-   { VectorJoiningMRG32k3a,     "VectorJoiningMRG32k3a" },
+   { VectorMRG32k3a,            "MRG32k3a" },
+   { VectorJoiningMRG32k3a,     "JoiningMRG32k3a" },
+   { VectorMRG32k3a_JoinByHand, "MRG32k3a/byHand" },
 // #ifdef NEW_TEST_JOINING_PROXY   
 //    { VectorJoiningRng_MRG32k3a, "VectorJoiningRng_MRG32k3a" },
 // //  { VectorJoiningRng_ThreeFry, "VectorJoiningRng_ThreeFry" },
 // #endif   
-   { VectorThreefry,            "VectorThreefry" },
-   { VectorPhilox,              "VectorPhilox" }
+   { VectorThreefry,            "Threefry" },
+   { VectorPhilox,              "Philox" }
  };
-constexpr int numVecKnlFuncs= 4; // Number of elements of VectorKnlFuncAndName[];
+constexpr int numVecKnlFuncs= 5; // Number of elements of VectorKnlFuncAndName[];
 
 // for (auto funcAndName : VectorKnlFuncAndName )
 

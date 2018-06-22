@@ -54,26 +54,28 @@ int RngBenchmarker::RunBenchmarkRng()
   return 0;
 }
 
-double variance( double sumValues, double sumSquares, int repetitions )
+double RngBenchmarker::variance( double sumValues, double sumSquares, int repetitions )
 {
-   double var=0.0;
-   double meanTime= sumValues / repetitions;
-   double varSq= sumSquares / repetitions - meanTime * meanTime;
-   if( varSq > 0.0 ) var = std::sqrt( varSq );
-   return var;
+  double var=0.0;
+  double meanTime= sumValues / repetitions;
+  double varSq= sumSquares / repetitions - meanTime * meanTime;
+  if( varSq > 0.0 ) var = std::sqrt( varSq );
+  return var;
 }
 
-void PrintReport(const char* method, const char* version, double meanTime,
-                 double sigmaTime, double resultTotal )
+void RngBenchmarker::PrintReport(const char* method, const char* version, double meanTime,
+                 double sigmaTime, double resultTotal, bool bestUnit)
 {
   printf(" %-15s  %-13s Time = ", method, version);
-      
-  if( meanTime*1E-6 > 1.0 ) {
-     const double msMult = 1.e-6; // micro-sec per ns      
-     printf("%6.3f +- %6.3f msec ", meanTime*msMult, sigmaTime*msMult);
-  } else if( meanTime*1E-3 > 1.0 ) {     
-     const double usMult = 1.e-3; // micro-sec per ns 
-     printf("%6.3f +- %6.3f usec ", meanTime*usMult, sigmaTime*usMult );
+
+  if( bestUnit && meanTime*1E-3 > 1.0 ) {     
+     if( meanTime*1E-6 > 1.0 ) {
+        const double msMult = 1.e-6; // micro-sec per ns      
+        printf("%6.3f +- %6.3f msec ", meanTime*msMult, sigmaTime*msMult);
+     } else { // if( meanTime*1E-3 > 1.0 ) {     
+        const double usMult = 1.e-3; // micro-sec per ns 
+        printf("%6.3f +- %6.3f usec ", meanTime*usMult, sigmaTime*usMult );
+     }
   } else {
      const double nsMult = 1.0; //  directly ns
      printf("%6.1f +- %6.1f nsec ", meanTime*nsMult, sigmaTime*nsMult );
@@ -81,17 +83,20 @@ void PrintReport(const char* method, const char* version, double meanTime,
   printf( "Sum = %g\n", resultTotal);  
 }
 
-void ProcessAndPrint( const char* method, const char* version,
+void RngBenchmarker::ProcessAndPrint( const char* method, const char* version,
                       double elapsedTotal,
                       double elapsedTotSq,
-                      int    nRepetition,
-                      int    nSamples,
+//                    int    nRepetition,
+//                    int    nSamples,
                       double resultTotal )
 {
+  int    nRepetition= fRepetition;
+  int    nSamples= fNSample;
+  
   double meanTime = elapsedTotal/nRepetition;
   double sigmaTime= variance( elapsedTotal, elapsedTotSq, nRepetition );
-  // meanTime  /= nSamples;
-  // sigmaTime /= nSamples;  
+  meanTime  /= nSamples;
+  sigmaTime /= nSamples;
   PrintReport(method, version, meanTime, sigmaTime, resultTotal );
 }
 
@@ -120,7 +125,7 @@ void RngBenchmarker::RunTest()
     resultTotal += result;
   }
 
-  ProcessAndPrint( "TestRand", "std::rand()", elapsedTotal, elapsedTotSq, fRepetition, fNSample,
+  ProcessAndPrint( "TestRand", "std::rand()", elapsedTotal, elapsedTotSq, // fRepetition, fNSample,
                    resultTotal );  
 }
 
@@ -158,7 +163,8 @@ void RngBenchmarker::RunScalar()
     // varncTime[k] = sqrt( elapsedTotalSq/fRepetition - meanTime[k] * meanTime[k] );
 
     ProcessAndPrint( RngName[k], "ScalarBackend", elapsedTotal, elapsedTotalSq,
-                     fRepetition, fNSample, resultTotal[k] );
+                     // fRepetition, fNSample,
+                     resultTotal[k] );
   }
 }
 
@@ -191,7 +197,8 @@ void RngBenchmarker::RunVector()
       resultTotal[k] += result;
     }
     ProcessAndPrint( VecRngName[k], "VectorBackend", elapsedTotal, elapsedTotalSq,
-                     fRepetition, fNSample, resultTotal[k] );
+                     // fRepetition, fNSample,
+                     resultTotal[k] );
   }
 }
 
@@ -225,7 +232,8 @@ void RngBenchmarker::RunVector2()
 
     std::string funcName=  std::get<1 /*std::string*/ >(funcAndName);  // funcAndName.second();    
     ProcessAndPrint( funcName.c_str(), "VectorBackend", elapsedTotal, elapsedTotSq,
-                     fRepetition, fNSample, resultTotal[k] );
+                     // fRepetition, fNSample,
+                     resultTotal[k] );
   }
 }
 
@@ -257,7 +265,8 @@ void RngBenchmarker::RunNState()
       resultTotal[k] += result;
     }
     ProcessAndPrint( RngName[k], "ScalarNstates", elapsedTotal, elapsedTotSq,
-                     fRepetition, fNSample, resultTotal[k] );
+                     // fRepetition, fNSample,
+                     resultTotal[k] );
   }
 }
 
