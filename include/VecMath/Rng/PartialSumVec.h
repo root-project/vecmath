@@ -147,7 +147,8 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
       for( int i= 0; i<N; ++i) cout << outArr[i];    cout << endl;
    }
    
-   for( int i= 1; i<N; i+=2)
+   // for( int i= 1; i<N; i+=2) // Version 1 
+   for( int i= 1; i<N; i++)    // Version 2
    {
       ScalarType  sumPrevious= Get( outArr[i-1], 3 );
       outArr[i] += dataType( sumPrevious );
@@ -163,7 +164,7 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
    // Local:  [ 0   1    2     3   ]    [  0    1     2     3   ]  
    // Sums:   [ 8  8-9  8-10  8-11 ]    [ 8-12 8-13  8-14  8-15  ]
 
-   
+#if 0   
    if( enableMod ){
       for( int i= 0; i<N; ++i) {
          outArr[i] = FastModuloMers61( outArr[i] );
@@ -188,6 +189,8 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
       }
    }
    // }
+#endif   
+   
 }
 
 
