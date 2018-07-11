@@ -11,6 +11,37 @@
 constexpr uint64_t gMers61 = 0x1fffffffffffffff;
 
 constexpr int VecWidth=4;  // For AVX ... 64 x 4 = 256 bits
+// static constexpr int vecSize= VectorSize<decltype(dbVec)>();
+
+#if 0
+template< typename dataType>
+std::ostream& operator<< ( std::ostream& os,
+                           const dataType & vecVal )
+// Streaming operator
+{
+  constexpr int vecSize= vecCore::VectorSize<decltype(vecVal)>();
+  for( int i=0 ; i< vecSize ; i++ )
+     os // << " "
+        << const_cast<typename vecCore::TypeTraits<dataType>::UInt64_t>(vecCore::Get( vecVal, i ))
+        << " "
+        ;
+
+  return os;
+}
+#else
+#include <iomanip>
+
+std::ostream& operator<< ( std::ostream& os,
+                           const vecCore::backend::UMESimdArray<4>::UInt64_v & vecVal )
+// Streaming operator
+{
+  constexpr int vecSize= vecCore::VectorSize<decltype(vecVal)>();
+  for( int i=0 ; i< vecSize ; i++ )
+     os << " " << std::setw(3) << vecCore::Get( vecVal, i );
+
+  return os;
+}
+#endif
 
 // ---------------------------------------------------------------
 // If two numbers are both 0 <= a, b < P
@@ -40,6 +71,11 @@ FastModuloMers61( const dataType a )
   return low2 + hi2;       
 }
 
+using std::cout;
+using std::endl;
+
+bool verbose= true;
+
 // ---------------------------------------------------------------
 //
 //
@@ -57,18 +93,32 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
    // First implementation assumes that dataType is VcSIMDArray<4>::UInt64_v
    dataType sum1[N];
 
+   cout << " Array In = " ;
+   for( int i= 0; i<N; ++i) cout << inpArr[i];  cout << endl;
+   cout << " Shift1   = " ;
+   
    // Shift one - from even to odd only
    for( int i= 0; i<N; ++i) {
-      dataType shift1;      
-      shift1 = dataType( 0UL );
+      dataType shift1( 0UL );
       Set( shift1, 1, Get( inpArr[i], 0 ));
       Set( shift1, 3, Get( inpArr[i], 2 ));
       // General:
       // for( int k= 1; i<=N; k+= 2) {
       // Set( shift1[i], k, Get( inpArr[i], k-1 ));      
-
+      cout << shift1;     
+   
       sum1[i] = inpArr[i] + shift1;
    }
+
+   if( verbose ) {
+      cout << endl;
+      cout << " Sum1     = " ;
+      for( int i= 0; i<N; ++i) {  cout << sum1[i]; } 
+      cout << endl;
+
+      cout << " Shift2   = " ;
+   }
+   
    // Expected result (til now): 
    // Index: [ 0   1    2     3   ]    [  4   5    6     7   ]
    //  'i'     ------- 0 ----------    ---------- 1 ----------   
@@ -79,9 +129,11 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
    for( int i= 0; i<N; ++i) {
       dataType    tshift2( 0UL );
       ScalarType  val1= Get( sum1[i], 1 );
-      tshift2= vecCore::Blend( MaskStep2, dataType( 0L ), dataType(val1) );
+      tshift2= vecCore::Blend( MaskStep2, dataType(val1), dataType( 0L ) );
       // Sum of up to four values
-      outArr[i] = sum1[i] + tshift2; 
+      outArr[i] = sum1[i] + tshift2;
+
+      cout << tshift2;
    }
    // Expected result (til now): 
    // Global: [ 0   1    2     3   ]    [  4   5    6     7   ]
@@ -89,6 +141,12 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
    // Local:  [ 0   1    2     3   ]    [  0   1    2     3   ]  
    // Sums:   [ 0  0+1   0-2  0-3  ]    [  4  4+5  4-6   4-7  ]
 
+   if( verbose ) {
+      cout << endl;
+      cout << " Sum2     = " ;
+      for( int i= 0; i<N; ++i) cout << outArr[i];    cout << endl;
+   }
+   
    for( int i= 1; i<N; i+=2)
    {
       ScalarType  sumPrevious= Get( outArr[i-1], 3 );

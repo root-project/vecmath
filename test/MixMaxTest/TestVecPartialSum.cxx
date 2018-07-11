@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <iomanip>
+#include <cassert>
+
 #include "timer.h"
 
 // using dataType = long int; 
@@ -34,21 +36,39 @@ void SimplePartialSum(const uLongType inArr[], uLongType outArr[], uLongType ove
 int TestPartialSum()
 {
   scalarLong arrA[Nscalar], arrPsum[Nscalar], overflowArr[Nscalar], outPSnew[Nscalar];
-  vecType  vecInpt[Nvec], vecOutp[Nvec];
+  vecType  vecInpt[Nvec], vecOutp[Nvec], tokenVT;
+  // const vecCore::Size_s vecWidth= vecCore::VectorSize<decltype(tokenVT)>;
+  constexpr int vecWidth= vecCore::VectorSize<decltype(tokenVT)>();
+  assert( vecWidth == 4  );
+
+  bool verbose= true;
+  if( verbose ) {
+     std::cout << "Nscalar = " << Nscalar << " Nvec= " << Nvec << std::endl;
+  }
   
   for( int i= 0; i< Nscalar; i++) {
     arrA[i]    = i;
     arrPsum[i] = 0;
   }
-  for( int ind= 0; ind*4 < Nvec; ind++) {
+
+  for( int ind= 0; ind < Nvec; ind++) {
     int i= 4 * ind;
-    vecInpt[i]    = { arrA[i],
+    vecInpt[ind]  = { arrA[i],
                       i+1<Nscalar ? arrA[i+1] : 0UL,
                       i+2<Nscalar ? arrA[i+2] : 0UL,
                       i+3<Nscalar ? arrA[i+3] : 0UL };
-    vecOutp[i]    = { 0L, 0L, 0L,  0L };
+    vecOutp[ind]    = { 0L, 0L, 0L,  0L };
+    
+    if( verbose )  {
+       std::cout << " [ " << ind << " => " << i << " ] = " ;
+       for( int j= 0; j< 4; j++ ) {
+          std::cout << vecCore::Get( vecInpt[ind] , j ) << " ";
+       }
+    }
+
   }
-  
+  std::cout << endl;
+
   SimplePartialSum<scalarLong, Nscalar> ( arrA, /* Nscalar,*/ arrPsum, overflowArr );
 
   // Now a vector partial sum - without modulo
@@ -58,18 +78,32 @@ int TestPartialSum()
   // New partial sum
   // PartialSumV2<longType, Nscalar>( arrA, outPSnew );  
 
+  bool verboseOut = true;
+  if( verboseOut ) { 
+     // Print output - verbose mode
+     printf( "   %3s    %10s   %10s  %10s \n", "I", "Input", "Scalar-psum", "Vec-par/sum");
+     printf( "========================================================================\n");
+     for( int i= 0; i< Nscalar; i++)
+     {
+        scalarLong vecRes= vecCore::Get( vecOutp[i/vecWidth], i % vecWidth );
+        // std::cout << " [ " << i << " scalar value  = " << arrA[i];
+        printf( " [ %3d ]  %10llu   %10llu  %10llu \n", i, arrA[i], arrPsum[i], vecRes);
+     }
+     printf( "========================================================================\n");
+  }
+  
   // Check
   int nBad= 0;
   for( int i= 0; i< Nscalar; i++)
   {
-    scalarLong vecRes= vecCore::Get( vecOutp[i/4], i%4 );
-    if( arrA[i] != vecRes ) {
+    scalarLong vecRes= vecCore::Get( vecOutp[i/vecWidth], i % vecWidth );
+    if( arrPsum[i] != vecRes ) {
       nBad ++; 
-      std::cerr << " Error in location " << i 
-               << "  scalar value  = " << arrA[i] 
-               << "  vector result = " << vecRes << std::endl;
-      // fprintf( stderr, " Error in location %d : value= %ld  - expected %ld \n",
-      //               i, arrA[i], arrPsum[i] );
+      // std::cerr << " Error in location " << i 
+      //          << "  scalar value  = " << arrPsum[i] 
+      //          << "  vector result = " << vecRes << std::endl;
+      fprintf( stderr, " Error in location %3d : scalar value= %5llu  - obtained %5llu \n",
+                    i, arrPsum[i], vecRes );
     }
   }
 
