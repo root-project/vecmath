@@ -7,8 +7,10 @@ option(BUILD_BENCHMARKS "Build binaries for performance benchmarking" OFF)
 set(VecCore_VERSION 0.4.2)
 
 if(BUILD_TESTING)
-  message("Vc backend selected for testing")
-  set(VecCore_BACKEND Vc)
+  # message("Vc backend selected for testing")
+  # set(VecCore_BACKEND Vc)
+  message("UME::SIMD backend selected for testing")
+  set(VecCore_BACKEND UMESIMD)
 endif()
 
 project(VecMath VERSION 0.1.0)

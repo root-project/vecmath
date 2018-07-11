@@ -1,10 +1,10 @@
 #ifndef  PartialSumVec_h
 #define  PartialSumVec_h
 
-// #include "Vc/Vc"
 #include "VecCore/VecCore"
-#include "VecCore/Backend/VcSimdArray.h"
-
+// #include "VecCore/Backend/VcSimdArray.h"
+// #include "VecCore/VecCore"
+// #include "VecCore/Backend/UMESimdArray.h"
 
 //  Constants - until moved to common header
 //
@@ -18,7 +18,7 @@ constexpr int VecWidth=4;  // For AVX ... 64 x 4 = 256 bits
 //
 template< typename dataType>
 dataType 
-SumModuloP( dataType a, dataType b, uint64_t P )
+SumModuloP( const dataType a, const dataType b, const uint64_t P )
 {
   vecCore::Mask<dataType> overP= a > (dataType) P;
   MaskedAssign( a, overP, a-P );
@@ -29,7 +29,7 @@ SumModuloP( dataType a, dataType b, uint64_t P )
 //
 template< typename dataType, bool largeVal = false >
 dataType 
-FastModuloP61( const dataType a )
+FastModuloMers61( const dataType a )
 {
   auto low = a & gMers61;  //  Max = gMers61 = 0x0fff ffff ffff ffff
   auto hi  = a >> 61;      //  Max = 7 
@@ -50,8 +50,10 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
    using vecCore::Set;
    using vecCore::Get;
    using ScalarType = uint64_t; // or Scalar<dataType> ...
-   using Mask_v = Vc::SimdMaskArray<ScalarType, VecWidth>;
-  
+   // using Mask_v = Vc::SimdMaskArray<ScalarType, VecWidth>;  // Works for Vc - not general
+   // using Mask_v = vecCore::SimdMaskArray<ScalarType, VecWidth>;  // Failes for all
+   using Mask_v = typename vecCore::TypeTraits<dataType>::MaskType;
+   
    // First implementation assumes that dataType is VcSIMDArray<4>::UInt64_v
    dataType sum1[N];
 
@@ -73,11 +75,11 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
    // Local: [ 0   1    2     3   ]    [  0   1    2     3   ]  
    // Sums:  [ 0  0+1   2    2+3  ]    [  4  4+5   6    6+7  ]
    
-   const Mask<dataType> MaskStep2 = { false, false, true, true };
+   const Mask_v MaskStep2 = { false, false, true, true };
    for( int i= 0; i<N; ++i) {
       dataType    tshift2( 0UL );
       ScalarType  val1= Get( sum1[i], 1 );
-      tshift2= Blend( MaskStep2, dataType( 0L ), dataType(val1) );
+      tshift2= vecCore::Blend( MaskStep2, dataType( 0L ), dataType(val1) );
       // Sum of up to four values
       outArr[i] = sum1[i] + tshift2; 
    }
@@ -114,7 +116,7 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
    // {
    constexpr int k= 2;
    ScalarType sum8= Get( outArr[k-1], 3 );
-   for( int i= 2; i< std::max(4U,N); i++) {
+   for( int i= 2; i<  vecCore::math::Max(4U,N); i++) {
       outArr[i] += dataType( sum8 );
 
       // Expected result (til now): 
@@ -124,7 +126,7 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
       // Sums:   [0-8 0-9  0-10  0-11 ]    [ 0-12 0-13  0-14  0-15  ]
 
       if( enableMod ){
-          ModMers61( outArr[i] );
+          outArr[i] = FastModuloMers61( outArr[i] );
       }
    }
    // }
@@ -173,6 +175,7 @@ template< typename dataType, unsigned int N>
 void
 AltPartialSumModuloP( dataType a[], const int P ) // , unsigned int N )  // [N] // InOut
 {
+  using Mask_v = typename vecCore::TypeTraits<dataType>::MaskType;
   for( unsigned int i=1; i< N; i += i )
   {
     unsigned int len= i; 
@@ -180,11 +183,11 @@ AltPartialSumModuloP( dataType a[], const int P ) // , unsigned int N )  // [N] 
     for( unsigned int j=i; j< N; j += skip )
     {      
        dataType prev= a[j-1];
-       unsigned int kTop = Min( j + len, N );
+       unsigned int kTop = vecCore::math::Min( j + len, N );
        for( unsigned int k=j; k< kTop; k++ )
        {
           a[k] += prev;
-          Mask<dataType> overP= a[k] > P;
+          Mask_v overP= a[k] > P;
           MaskedAssign( a[k], overP, a[k]-P );
           //  or use a FastModulo(x,P61) ??
        }

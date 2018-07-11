@@ -6,13 +6,16 @@
 
 // using dataType = long int; 
 
-// #include "PartialSumVec.h"
+#include "VecCore/VecCore"
+#include "VecCore/backend/UMESimdArray.h"
+
 #include "VecMath/Rng/PartialSumVec.h"
 
 constexpr unsigned int Nscalar=16, Nvec= (Nscalar+3)/4;
 
-using longType = UInt64_v;   // unsigned long int;
-using vecType = VcSIMDArray<4>::UInt64_v;
+using scalarLong = vecCore::UInt64_s;   // unsigned long int;
+// using vecType = VcSIMDArray<4>::UInt64_v;
+using vecType = vecCore::backend::UMESimdArray<4>::UInt64_v;
 
 template <typename uLongType, int num>
 void SimplePartialSum(const uLongType inArr[], uLongType outArr[], uLongType overflowArr[] = 0 )
@@ -30,7 +33,7 @@ void SimplePartialSum(const uLongType inArr[], uLongType outArr[], uLongType ove
 
 int TestPartialSum()
 {
-  longType arrA[Nscalar], arrPsum[Nscalar], overflowArr[Nscalar], outPSnew[Nscalar];
+  scalarLong arrA[Nscalar], arrPsum[Nscalar], overflowArr[Nscalar], outPSnew[Nscalar];
   vecType  vecInpt[Nvec], vecOutp[Nvec];
   
   for( int i= 0; i< Nscalar; i++) {
@@ -43,13 +46,14 @@ int TestPartialSum()
                       i+1<Nscalar ? arrA[i+1] : 0UL,
                       i+2<Nscalar ? arrA[i+2] : 0UL,
                       i+3<Nscalar ? arrA[i+3] : 0UL };
-    Vecoutp[i]    = { 0L, 0L, 0L,  0L };
+    vecOutp[i]    = { 0L, 0L, 0L,  0L };
   }
   
-  SimplePartialSum<longType, Nscalar> ( arrA, /* Nscalar,*/ arrPsum, overflowArr );
+  SimplePartialSum<scalarLong, Nscalar> ( arrA, /* Nscalar,*/ arrPsum, overflowArr );
 
-  // Now do an in-place partial sum
-  PartialSumV1<vecType, Nvec>( vecInpt, vecOutp );
+  // Now a vector partial sum - without modulo
+  constexpr bool enableModulo = false;
+  PartialSumVec<vecType, Nvec, enableModulo>( vecInpt, vecOutp);
 
   // New partial sum
   // PartialSumV2<longType, Nscalar>( arrA, outPSnew );  
@@ -58,7 +62,7 @@ int TestPartialSum()
   int nBad= 0;
   for( int i= 0; i< Nscalar; i++)
   {
-    longType vecRes= vecCore::Get( vecOutp[i/4], i%4 );
+    scalarLong vecRes= vecCore::Get( vecOutp[i/4], i%4 );
     if( arrA[i] != vecRes ) {
       nBad ++; 
       std::cerr << " Error in location " << i 
@@ -75,14 +79,14 @@ int TestPartialSum()
 /********
 int BenchmarkPartialSums(const unsigned int nRepetitions= 1000 )
 {
-  longType arrA[Nscalar], arrOutNew[Nscalar], arrOutOld[Nscalar];
+  scalarLong arrA[Nscalar], arrOutNew[Nscalar], arrOutOld[Nscalar];
   static Timer<nanoseconds> timer;
 
-  // longType result[nRepetitions];
-  // longType resold[nRepetitions];
+  // scalarLong result[nRepetitions];
+  // scalarLong resold[nRepetitions];
 
-  longType* result= new longType[nRepetitions];
-  longType* resold= new longType[nRepetitions];
+  scalarLong* result= new scalarLong[nRepetitions];
+  scalarLong* resold= new scalarLong[nRepetitions];
   
   for( int i= 0; i< nRepetitions; i++)
     result[i]= 0;
@@ -99,7 +103,7 @@ int BenchmarkPartialSums(const unsigned int nRepetitions= 1000 )
         arrA[i]= i;
      arrA[ j % Nscalar] = 0;
 
-     PartialSumV1<longType, Nscalar>( arrA );
+     PartialSumV1<scalarLong, Nscalar>( arrA );
      result[j]= arrA[Nscalar-1];
   }
   double newtime = timer.Elapsed();
