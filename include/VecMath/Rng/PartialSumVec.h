@@ -71,10 +71,13 @@ FastModuloMers61( const dataType a )
   return low2 + hi2;       
 }
 
+template< typename dataType>
+void PrintArrLine( const char* label, const dataType inpArr[], int N );
+
 using std::cout;
 using std::endl;
 
-bool verbose= true;
+// #define VERBOSE  1
 
 // ---------------------------------------------------------------
 //
@@ -85,114 +88,108 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
 {
    using vecCore::Set;
    using vecCore::Get;
-   using ScalarType = uint64_t; // or Scalar<dataType> ...
+   // using ScalarType = uint64_t; // or Scalar<dataType> ...
+   using ScalarType = typename vecCore::TypeTraits<dataType>::ScalarType;   
+
+   using Mask_v = typename vecCore::TypeTraits<dataType>::MaskType;
+
+   const Mask_v MaskStep2 = { false, false, true, true };
+   constexpr int vecSize= vecCore::VectorSize<dataType>(); // decltype(dummy)>();
+
+#ifdef VERBOSE
+   dataType sum1keep[N];
+   constexpr bool verbose= true;
+   dataType shift1keep[N], shift2keep[N];
+#else   
+   constexpr bool verbose= false;
+#endif
+
    // using Mask_v = Vc::SimdMaskArray<ScalarType, VecWidth>;  // Works for Vc - not general
    // using Mask_v = vecCore::SimdMaskArray<ScalarType, VecWidth>;  // Failes for all
-   using Mask_v = typename vecCore::TypeTraits<dataType>::MaskType;
    
-   // First implementation assumes that dataType is VcSIMDArray<4>::UInt64_v
-   dataType sum1[N];
-
-   cout << " Array In = " ;
-   for( int i= 0; i<N; ++i) cout << inpArr[i];  cout << endl;
-   cout << " Shift1   = " ;
-   
+   if( verbose ) {
+     cout << " vecSize = " << vecSize << endl;
+     PrintArrLine( "Array In", inpArr, N );
+   }
+      
    // Shift one - from even to odd only
    for( int i= 0; i<N; ++i) {
-      dataType shift1( 0UL );
+      dataType shift1( 0UL ), sum1( 0UL );
+      
       Set( shift1, 1, Get( inpArr[i], 0 ));
       Set( shift1, 3, Get( inpArr[i], 2 ));
-      // General:
-      // for( int k= 1; i<=N; k+= 2) {
-      // Set( shift1[i], k, Get( inpArr[i], k-1 ));      
-      cout << shift1;     
-   
-      sum1[i] = inpArr[i] + shift1;
+      sum1 = inpArr[i] + shift1;
+      
+#ifdef VERBOSE
+      shift1keep[i] = shift1;
+      sum1keep[i] = sum1; 
+#endif
+
+#ifdef SPLIT_LOOPS
    }
 
-   if( verbose ) {
-      cout << endl;
-      cout << " Sum1     = " ;
-      for( int i= 0; i<N; ++i) {  cout << sum1[i]; } 
-      cout << endl;
-
-      cout << " Shift2   = " ;
-   }
-   
    // Expected result (til now): 
    // Index: [ 0   1    2     3   ]    [  4   5    6     7   ]
    //  'i'     ------- 0 ----------    ---------- 1 ----------   
    // Local: [ 0   1    2     3   ]    [  0   1    2     3   ]  
    // Sums:  [ 0  0+1   2    2+3  ]    [  4  4+5   6    6+7  ]
    
-   const Mask_v MaskStep2 = { false, false, true, true };
    for( int i= 0; i<N; ++i) {
+#endif      
       dataType    tshift2( 0UL );
       ScalarType  val1= Get( sum1[i], 1 );
       tshift2= vecCore::Blend( MaskStep2, dataType(val1), dataType( 0L ) );
       // Sum of up to four values
       outArr[i] = sum1[i] + tshift2;
 
-      cout << tshift2;
+#ifdef VERBOSE      
+      shift2keep[i] = tshift2;
+      // cout << tshift2;
+#endif      
    }
+   
+#ifdef VERBOSE
+   if( verbose ) {
+      PrintArrLine( "Shift1   ", shift1keep, N ); /*<dataType>*/
+      PrintArrLine( "Sum1     ", sum1, N );
+      PrintArrLine( "Shift2   ", shift2keep, N );
+      PrintArrLine( "Sum2     ", outArr, N );
+   }
+#endif   
    // Expected result (til now): 
    // Global: [ 0   1    2     3   ]    [  4   5    6     7   ]
    //  'i'     ------- 0 ----------    ---------- 1 ----------
    // Local:  [ 0   1    2     3   ]    [  0   1    2     3   ]  
    // Sums:   [ 0  0+1   0-2  0-3  ]    [  4  4+5  4-6   4-7  ]
 
-   if( verbose ) {
-      cout << endl;
-      cout << " Sum2     = " ;
-      for( int i= 0; i<N; ++i) cout << outArr[i];    cout << endl;
-   }
-   
-   // for( int i= 1; i<N; i+=2) // Version 1 
-   for( int i= 1; i<N; i++)    // Version 2
-   {
-      ScalarType  sumPrevious= Get( outArr[i-1], 3 );
-      outArr[i] += dataType( sumPrevious );
-   }
-   // Expected result (til now): 
-   // Global: [ 0   1    2     3   ]    [  4   5    6     7   ]
-   //  'i'     ------- 0 ----------    ---------- 1 ----------
-   // Local:  [ 0   1    2     3   ]    [  0   1    2     3   ]  
-   // Sums:   [ 0  0+1   0-2  0-3  ]    [ 0-4 0-5  0-6   0-7  ]
-
    // Global: [ 8   9   10    11   ]    [ 12   13    14    15   ]
    //  'i'     ------- 2 ----------    ---------- 3 ----------
    // Local:  [ 0   1    2     3   ]    [  0    1     2     3   ]  
-   // Sums:   [ 8  8-9  8-10  8-11 ]    [ 8-12 8-13  8-14  8-15  ]
+   // Sums:   [ 8  8+9  8-10  8-11 ]    [ 12  12-13 12-14 12-15  ]
 
-#if 0   
-   if( enableMod ){
-      for( int i= 0; i<N; ++i) {
+   // "Version 2" - does all the remaining work, but requires
+   //    results of previous iteration in next one.
+   for( int i= 1; i<N; i++)
+   {
+      ScalarType  sumPrevious= Get( outArr[i-1], 3 );
+      outArr[i] += dataType( sumPrevious );
+      if( enableMod ){
          outArr[i] = FastModuloMers61( outArr[i] );
       }
    }
-
-   //for( int k= 2; i<N; i+=2)
-   // {
-   constexpr int k= 2;
-   ScalarType sum8= Get( outArr[k-1], 3 );
-   for( int i= 2; i<  vecCore::math::Max(4U,N); i++) {
-      outArr[i] += dataType( sum8 );
-
-      // Expected result (til now): 
-      // Global: [ 8   9   10    11   ]    [ 12   13    14    15   ]
-      //  'i'     ------- 2 ----------    ---------- 3 ----------
-      // Local:  [ 0   1    2     3   ]    [  0    1     2     3   ]  
-      // Sums:   [0-8 0-9  0-10  0-11 ]    [ 0-12 0-13  0-14  0-15  ]
-
-      if( enableMod ){
-          outArr[i] = FastModuloMers61( outArr[i] );
-      }
-   }
-   // }
-#endif   
-   
 }
 
+// ---------------------------------------------------------------
+template< typename dataType>
+void PrintArrLine( const char* label, const dataType arrayVec[], int N )
+{
+   using std::cout;
+   // cout << endl;
+   cout << std::setw(9) << label << " = " ;
+   for( int i= 0; i<N; ++i)
+      cout << arrayVec[i]; // << " - ";
+   cout << std::endl;
+}
 
 /***
 template< typename dataType, unsigned int N >
