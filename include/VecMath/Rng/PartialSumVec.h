@@ -1,7 +1,10 @@
 #ifndef  PartialSumVec_h
 #define  PartialSumVec_h
 
+// #define  __AVX2__   1  // Instruct UME::SIMD to use AVX2 ... !?
+
 #include "VecCore/VecCore"
+
 // #include "VecCore/Backend/VcSimdArray.h"
 // #include "VecCore/VecCore"
 // #include "VecCore/Backend/UMESimdArray.h"
@@ -62,7 +65,7 @@ template< typename dataType, bool largeVal = false >
 dataType 
 FastModuloMers61( const dataType a )
 {
-  auto low = a & gMers61;  //  Max = gMers61 = 0x0fff ffff ffff ffff
+  auto low = a & dataType( gMers61 );  //  Max = gMers61 = 0x0fff ffff ffff ffff
   auto hi  = a >> 61;      //  Max = 7 
   auto s   = low + hi;     //  Max = 0x1000 0000 0000 0006
 
@@ -93,7 +96,8 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
 
    using Mask_v = typename vecCore::TypeTraits<dataType>::MaskType;
 
-   const Mask_v MaskStep2 = { false, false, true, true };
+   const Mask_v MaskStep2 // = { false, false, true, true };
+                          ( false, false, true, true );
    constexpr int vecSize= vecCore::VectorSize<dataType>(); // decltype(dummy)>();
 
 #ifdef VERBOSE
@@ -114,44 +118,37 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
       
    // Shift one - from even to odd only
    for( int i= 0; i<N; ++i) {
-      dataType shift1( 0UL ), sum1( 0UL );
+      dataType  shift1( 0UL ), sum1( 0UL );
+      dataType tshift2( 0UL );
       
       Set( shift1, 1, Get( inpArr[i], 0 ));
       Set( shift1, 3, Get( inpArr[i], 2 ));
       sum1 = inpArr[i] + shift1;
+
+      ScalarType  val1= Get( sum1, 1 );
+      tshift2= vecCore::Blend( MaskStep2, dataType(val1), dataType( 0L ) );
+
+      outArr[i] = sum1 + tshift2;    
+      // Sum of up to four values
+
+      // outArr[i] = sum1[i] + tshift2;    // Gives interesting compiler errors
       
 #ifdef VERBOSE
       shift1keep[i] = shift1;
       sum1keep[i] = sum1; 
-#endif
-
-#ifdef SPLIT_LOOPS
-   }
-
-   // Expected result (til now): 
-   // Index: [ 0   1    2     3   ]    [  4   5    6     7   ]
-   //  'i'     ------- 0 ----------    ---------- 1 ----------   
-   // Local: [ 0   1    2     3   ]    [  0   1    2     3   ]  
-   // Sums:  [ 0  0+1   2    2+3  ]    [  4  4+5   6    6+7  ]
-   
-   for( int i= 0; i<N; ++i) {
-#endif      
-      dataType    tshift2( 0UL );
-      ScalarType  val1= Get( sum1[i], 1 );
-      tshift2= vecCore::Blend( MaskStep2, dataType(val1), dataType( 0L ) );
-      // Sum of up to four values
-      outArr[i] = sum1[i] + tshift2;
-
-#ifdef VERBOSE      
       shift2keep[i] = tshift2;
       // cout << tshift2;
-#endif      
+#endif
+
+// #define SEPARATE_LOOPS 1
+      
+#ifdef SEPARATE_LOOPS
    }
    
 #ifdef VERBOSE
    if( verbose ) {
       PrintArrLine( "Shift1   ", shift1keep, N ); /*<dataType>*/
-      PrintArrLine( "Sum1     ", sum1, N );
+      PrintArrLine( "Sum1     ", sum1keep,   N );
       PrintArrLine( "Shift2   ", shift2keep, N );
       PrintArrLine( "Sum2     ", outArr, N );
    }
@@ -171,7 +168,8 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
    //    results of previous iteration in next one.
    for( int i= 1; i<N; i++)
    {
-      ScalarType  sumPrevious= Get( outArr[i-1], 3 );
+#endif      
+      ScalarType  sumPrevious= i > 0 ? Get( outArr[i-1], 3 ) : 0UL ;
       outArr[i] += dataType( sumPrevious );
       if( enableMod ){
          outArr[i] = FastModuloMers61( outArr[i] );
