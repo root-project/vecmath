@@ -65,11 +65,13 @@ template< typename dataType, bool largeVal = false >
 dataType 
 FastModuloMers61( const dataType a )
 {
-  auto low = a & dataType( gMers61 );  //  Max = gMers61 = 0x0fff ffff ffff ffff
+  auto mask61 = dataType( gMers61 );
+  
+  auto low = a & mask61; // dataType( gMers61 );  //  Max = gMers61 = 0x0fff ffff ffff ffff
   auto hi  = a >> 61;      //  Max = 7 
   auto s   = low + hi;     //  Max = 0x1000 0000 0000 0006
 
-  auto low2 = s & gMers61; 
+  auto low2 = s & mask61; // dataType( gMers61 );
   auto hi2  = s >> 61;     //  Max = 1
   return low2 + hi2;       
 }
@@ -115,9 +117,9 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
      cout << " vecSize = " << vecSize << endl;
      PrintArrLine( "Array In", inpArr, N );
    }
-      
-   // Shift one - from even to odd only
+
    for( int i= 0; i<N; ++i) {
+      // Shift one - from even to odd only      
       dataType  shift1( 0UL ), sum1( 0UL );
       dataType tshift2( 0UL );
       
@@ -128,7 +130,8 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
       ScalarType  val1= Get( sum1, 1 );
       tshift2= vecCore::Blend( MaskStep2, dataType(val1), dataType( 0L ) );
 
-      outArr[i] = sum1 + tshift2;    
+      outArr[i] = sum1 + tshift2;
+      // auto res1 = sum1 + tshift2;    // Idea 2.5
       // Sum of up to four values
 
       // outArr[i] = sum1[i] + tshift2;    // Gives interesting compiler errors
@@ -168,11 +171,16 @@ PartialSumVec( const dataType inpArr[N], dataType outArr[N] )
    //    results of previous iteration in next one.
    for( int i= 1; i<N; i++)
    {
-#endif      
-      ScalarType  sumPrevious= i > 0 ? Get( outArr[i-1], 3 ) : 0UL ;
-      outArr[i] += dataType( sumPrevious );
+      // If loops are 'separated' the following works:      
+      ScalarType  sumPrevious= Get( outArr[i-1], 3 );      
+#else
+      ScalarType  sumPrevious= i > 0 ? Get( outArr[i-1], 3 )  : 0UL ;
+#endif
+      auto res = outArr[i] + dataType( sumPrevious );
       if( enableMod ){
-         outArr[i] = FastModuloMers61( outArr[i] );
+         outArr[i] = FastModuloMers61( res );
+      } else {
+         outArr[i] = res;
       }
    }
 }
