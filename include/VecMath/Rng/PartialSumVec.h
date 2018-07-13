@@ -61,7 +61,10 @@ SumModuloP( const dataType a, const dataType b, const uint64_t P )
 // ---------------------------------------------------------------
 //
 //
+
 template< typename dataType, bool largeVal = false >
+// inline
+VECCORE_FORCE_INLINE
 dataType 
 FastModuloMers61( const dataType a )
 {
