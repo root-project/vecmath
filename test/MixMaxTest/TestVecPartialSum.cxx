@@ -9,18 +9,26 @@
 // using dataType = long int; 
 
 // #define  __AVX2__   1   // Instruct UME::SIMD to use AVX2 ... !?
+//                            Resolved by adding -march=native in CXXFLAGS
 #include "VecCore/VecCore"
 #include "VecCore/backend/UMESimdArray.h"
 
 #include "VecMath/Rng/PartialSumVec.h"
 
-constexpr unsigned int Nscalar=16, Nvec= (Nscalar+3)/4;
+//  Most important parameters
+constexpr unsigned int Nscalar=16;
+constexpr bool enableModulo = true;
+
+//  Derived parameters
+constexpr unsigned int Nvec= (Nscalar+3)/4;
 
 using scalarLong = vecCore::UInt64_s;   // unsigned long int;
 // using vecType = VcSIMDArray<4>::UInt64_v;
 using vecType = vecCore::backend::UMESimdArray<4>::UInt64_v;
                 // UME::SIMD::SIMDVec<uint64_t, 4>;
 // using UInt64_v = UME::SIMD::SIMDVec<UInt64_s, N>;
+
+// ---------------------------------------------------------------------------------
 
 template <typename uLongType, int num>
 void PartialSumWithOverflow(const uLongType inArr[], uLongType outArr[], uLongType overflowArr[] = 0 )
@@ -35,6 +43,8 @@ void PartialSumWithOverflow(const uLongType inArr[], uLongType outArr[], uLongTy
        overflowArr[i] = overflow;
   }
 }
+
+// ---------------------------------------------------------------------------------
 
 void
 PrepareInputVecArray( vecType  vecArr[Nvec],  scalarLong arrIn[Nscalar], bool verbose= false )
@@ -57,6 +67,8 @@ PrepareInputVecArray( vecType  vecArr[Nvec],  scalarLong arrIn[Nscalar], bool ve
     
 }
 
+// ---------------------------------------------------------------------------------
+
 void
 ConvertVecToArray( const vecType  vecArr[Nvec],
                    scalarLong     arrOut[Nscalar],
@@ -77,6 +89,8 @@ void ReportSumResults( const scalarLong arrInput[Nscalar],
                        const vecType    vecSum[Nvec],        // New (vec) result
                        int Nscalar );
 
+// ---------------------------------------------------------------------------------
+
 void SimplePartialSum(const scalarLong inArr[], int num,
                       scalarLong outArr[] )
 {
@@ -86,7 +100,20 @@ void SimplePartialSum(const scalarLong inArr[], int num,
   }
 }
 
-int TestPartialSum()
+// ---------------------------------------------------------------------------------
+
+void SimplePartialSumWithModulo(const scalarLong inArr[], int num,
+                                scalarLong outArr[] )
+{
+  outArr[0] = inArr[0];
+  for( int i= 1; i< num; i++){
+     outArr[i] = FastModuloMers61( outArr[i-1] + inArr[i] );
+  }
+}
+
+// =================================================================================
+
+int TestPartialSum( bool useModulo= false )
 {
   scalarLong arrA[Nscalar], arrPsum[Nscalar], overflowArr[Nscalar], outPSnew[Nscalar];
   vecType  vecInpt[Nvec], vecOutp[Nvec], tokenVT;
@@ -99,9 +126,9 @@ int TestPartialSum()
      std::cout << "TestPartialSum> ";
      std::cout << "Nscalar = " << Nscalar << " Nvec= " << Nvec << std::endl;
   }
-  
+
   for( int i= 0; i< Nscalar; i++) {
-    arrA[i]    = i;
+    arrA[i]    = gMers61 - i;
     arrPsum[i] = 0;
   }
 
@@ -109,11 +136,19 @@ int TestPartialSum()
   PrepareInputVecArray( vecInpt, arrA, verbInp ); 
   
   // PartialSumWithOverFlow<scalarLong, Nscalar> ( arrA, arrPsum, overflowArr );
-  SimplePartialSum( arrA, Nscalar, arrPsum );
+  if( ! useModulo )
+     SimplePartialSum( arrA, Nscalar, arrPsum );
+  else  
+     SimplePartialSumWithModulo( arrA, Nscalar, arrPsum );  
+
   
   // Now a vector partial sum - without modulo
-  constexpr bool enableModulo = false;
-  PartialSumVec<vecType, Nvec, enableModulo>( vecInpt, vecOutp);
+  constexpr bool enabledModulo = true;
+
+  if( ! useModulo )  
+     PartialSumVec<vecType, Nvec, false >( vecInpt, vecOutp);
+  else
+     PartialSumVec<vecType, Nvec, enabledModulo>( vecInpt, vecOutp);     
 
   // New partial sum
   // PartialSumV2<longType, Nscalar>( arrA, outPSnew );  
@@ -183,7 +218,7 @@ int BenchmarkPartialSums(const unsigned int nRepetitions= 1000 )
   // int   slot = Nscalar; // For use in changing the values ...
 
   bool varyInput = true;
-  
+
   // --- Scalar  Version ---  Start -------------------  
   timer.Start();
   for( int j= 0; j < nRepetitions; j++)  
@@ -194,8 +229,12 @@ int BenchmarkPartialSums(const unsigned int nRepetitions= 1000 )
         indChanged = j % Nscalar;
         arrA[ indChanged ] = 0;
      }
-     
-     SimplePartialSum( arrA, Nscalar, arrOutScalar );
+
+     if( enableModulo ) {
+        SimplePartialSumWithModulo( arrA, Nscalar, arrOutScalar );
+     } else {
+        SimplePartialSum( arrA, Nscalar, arrOutScalar );
+     }
      
      resScalar[j]= arrOutScalar[Nscalar-1];
      if( varyInput ) {     
@@ -210,7 +249,6 @@ int BenchmarkPartialSums(const unsigned int nRepetitions= 1000 )
   for( int j= 0; j< nRepetitions; j++)  
   {
      // slot--; if( slot == 0 ) { slot = Nscalar; }
-     constexpr bool enableModulo = false;
      int iChanged = j % Nscalar;
 
      int indV = iChanged >> 2;
@@ -326,6 +364,8 @@ int main( int argc, char **argv)
 {
   // if( argc == 1) N = atoi( argv[0] );
   TestPartialSum();
+
+  TestPartialSum( true ); // i.e. enable Modulo
 
 #ifdef  ENABLE_BENCHMARK
   int nRepetitions= 100000;
