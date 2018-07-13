@@ -14,7 +14,7 @@
 
 #include "VecMath/Rng/PartialSumVec.h"
 
-constexpr unsigned int Nscalar=17, Nvec= (Nscalar+3)/4;
+constexpr unsigned int Nscalar=16, Nvec= (Nscalar+3)/4;
 
 using scalarLong = vecCore::UInt64_s;   // unsigned long int;
 // using vecType = VcSIMDArray<4>::UInt64_v;
@@ -262,11 +262,14 @@ int BenchmarkPartialSums(const unsigned int nRepetitions= 1000 )
       //                 i, arrA[i], i+1 );
     }
   }
-  std::cerr << " -- Summary of comparison: Good = " << Nscalar - nBad
-            << " Bad = " << nBad << " out of " << Nscalar << " . " << std::endl;
-  std::cerr << "    Percentage bad = " << 100.0 * nBad / Nscalar << " % "
-            << std::endl;
-     
+
+  if( nBad > 0 ) {
+     std::cerr << " Problem result found in comparison with simple sequential method. " << std::endl;
+     std::cerr << " -- Summary of comparison: Good = " << Nscalar - nBad
+               << " Bad = " << nBad << " out of " << Nscalar << " . " << std::endl;
+     std::cerr << "    Percentage bad = " << 100.0 * nBad / Nscalar << " % "
+               << std::endl;
+  }
 
   // Check all sums
   int nBad2= 0;
@@ -319,13 +322,23 @@ void ReportSumResults( const scalarLong arrInput[],
   printf( "========================================================================\n"); 
 }
 
-int main() // int argc, char **argv)
+int main( int argc, char **argv)
 {
   // if( argc == 1) N = atoi( argv[0] );
   TestPartialSum();
 
 #ifdef  ENABLE_BENCHMARK
-  const int nRepetitions= 100000;
+  int nRepetitions= 100000;
+
+  std::cout << " Argc = " << argc;
+  if( argc > 1 ) {
+     int nrepsIn = atoi( argv[1] );
+
+     std::cout << " numRepetitions = Argv[1] = " << nrepsIn ;
+     if( nrepsIn > 0 )
+        nRepetitions = nrepsIn;
+  }
+
   BenchmarkPartialSums(nRepetitions);
 #endif
 }
