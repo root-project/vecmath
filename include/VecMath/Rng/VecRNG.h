@@ -91,6 +91,42 @@ public:
 
   //Common methods
 
+  // Return Index_v<ypename BackendT::Double_v> of random index numbers in (min,max]
+  template <typename BackendT>
+  VECCORE_ATT_HOST_DEVICE
+  Index_v<typename BackendT::Double_v> 
+  UniformIndex(Index_v<typename BackendT::Double_v> min = 0,
+               Index_v<typename BackendT::Double_v> max = INT32_MAX)
+  { 
+    return min+(max-min)*static_cast<DerivedT *>(this)-> template Uniform<BackendT>(); 
+  }
+
+  //UniformIndex - specialization for scalar
+  VECCORE_ATT_HOST_DEVICE
+  Index_v<double> 
+  UniformIndex(Index_v<double> min = 0, Index_v<double> max = UINT64_MAX)
+  { 
+    return min+(max-min)*static_cast<DerivedT *>(this)-> template Uniform<ScalarBackend>();
+  }
+
+  // Return Index_v<ypename BackendT::Double_v> of random numbers in (min,max] with a state
+  template <typename BackendT>
+  VECCORE_ATT_HOST_DEVICE
+  Index_v<typename BackendT::Double_v>
+  UniformIndex(State_t *state, Index_v<typename BackendT::Double_v> min = 0,
+                               Index_v<typename BackendT::Double_v> max = INT32_MAX)
+  { 
+    return min+(max-min)*static_cast<DerivedT *>(this)-> template Uniform<BackendT>(state); 
+  }
+
+  //UniformIndex with a status - specialization for scalar
+  VECCORE_ATT_HOST_DEVICE
+  Index_v<double> 
+  UniformIndex(State_t *state, Index_v<double> min = 0, Index_v<double> max = UINT64_MAX)
+  { 
+    return min+(max-min)*static_cast<DerivedT *>(this)-> template Uniform<ScalarBackend>(state); 
+  }
+
   // Returns an array of random numbers of the type BackendT::Double_v
   template <typename BackendT>
   VECCORE_ATT_HOST_DEVICE
