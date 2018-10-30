@@ -89,6 +89,9 @@ public:
   VECCORE_ATT_HOST_DEVICE
   State_t* GetState() const { return fState; }
 
+  VECCORE_ATT_HOST_DEVICE
+  State_t const& GetStateRef() const { return *fState; }
+
   //Common methods
 
   // Return Index_v<ypename BackendT::Double_v> of random index numbers in (min,max]

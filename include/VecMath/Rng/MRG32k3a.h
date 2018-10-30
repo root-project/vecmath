@@ -112,7 +112,10 @@ public:
   VECCORE_FORCE_INLINE
   void AdvanceState(long n, long e);
 
-  VECCORE_ATT_HOST void PrintState() const;
+  VECCORE_FORCE_INLINE
+  VECCORE_ATT_HOST void PrintState() const { return PrintState(*(this->fState)); }
+
+  VECCORE_ATT_HOST void PrintState(State_t const &state) const;
 
   VECCORE_ATT_HOST_DEVICE
   void SetSeed(Real_t seed[MRG::vsize]);
@@ -294,11 +297,12 @@ void MRG32k3a<ScalarBackend>::Initialize(State_s *states, unsigned int nthreads)
 // Print information of the current state
 template <typename BackendT>
 VECCORE_ATT_HOST
-void MRG32k3a<BackendT>::PrintState() const
+void MRG32k3a<BackendT>::PrintState(State_t const& state) const
 {
   for(size_t j = 0 ; j < MRG::vsize ; ++j) {
-    std::cout << this->fState->fCg[j] << std::endl;
+    std::cout << state.fCg[j] << " ";
   }
+  std::cout << std::endl;
 }
 
 // Set the next seed

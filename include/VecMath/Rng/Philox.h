@@ -125,7 +125,10 @@ public:
 
   VECCORE_ATT_HOST_DEVICE long long GetSeed() const { return fSeed; }
 
-  VECCORE_ATT_HOST void PrintState() const;
+  VECCORE_FORCE_INLINE
+  VECCORE_ATT_HOST void PrintState() const { return PrintState(*(this->fState)); }
+
+  VECCORE_ATT_HOST void PrintState(State_t const &state) const;
 
 private:
   // the mother is friend of this
@@ -324,11 +327,11 @@ inline void Philox<ScalarBackend>::IncreaseCounter(State_s *state)
 
 // Print information of the current state
 template <typename BackendT>
-VECCORE_ATT_HOST void Philox<BackendT>::PrintState() const
+VECCORE_ATT_HOST void Philox<BackendT>::PrintState(State_t const& state) const
 {
-  std::cout << "index = " << this->fState->index << std::endl;
+  std::cout << "index = " << state.index << std::endl;
   for(size_t i = 0 ; i < 2 ; ++i) {
-    std::cout << "key[" << i << "] = " <<  this->fState->key[i] << std::endl;
+    std::cout << "key[" << i << "] = " <<  state.key[i] << std::endl;
   }
 }
 
