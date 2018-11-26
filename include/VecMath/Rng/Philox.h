@@ -139,6 +139,12 @@ private:
 
   VECCORE_ATT_HOST inline void SetNextSubstream();
 
+  // Output function
+  template <typename ReturnTypeBackendT>
+  VECCORE_ATT_HOST_DEVICE
+  VECCORE_FORCE_INLINE
+  typename ReturnTypeBackendT::Double_v OutFunction(State_t& state);
+
   // Increase counter
   VECCORE_ATT_HOST_DEVICE 
   inline void IncreaseCounter(State_t *state);
@@ -367,6 +373,26 @@ VECCORE_ATT_HOST void Philox<ScalarBackend>::AdvanceState(long long n)
   ++(this->fState->ctr[3]);
 }
 
+// output function                                                                                    
+template <class BackendT>
+template <class ReturnTypeBackendT>
+VECCORE_ATT_HOST_DEVICE
+typename ReturnTypeBackendT::Double_v Philox<BackendT>::OutFunction(State_t& state)
+{
+  using Double_v = typename ReturnTypeBackendT::Double_v;
+  return simd_cast<Double_v>( (state.ukey[state.index]) )/UINT32_MAX;
+}
+
+// output function - specialization for the scalar backend
+template <>
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE double
+Philox<ScalarBackend>::OutFunction<ScalarBackend>(State_s& state)
+{
+  return static_cast<double>( (state.ukey[state.index]) )/UINT32_MAX;
+}
+
 // Kernel to generate a vector(scalar) of next random number(s)
 template <class BackendT>
 template <class ReturnTypeBackendT>
@@ -381,7 +407,7 @@ typename ReturnTypeBackendT::Double_v Philox<BackendT>::Kernel(State_t& state)
     Gen(state.ctr,state.key,state.ukey);
 
     //construct 8xUInt32 (ukey) to 4xUInt64, then convert to Double_v using UINT32_MAX
-    u = static_cast<Double_v>( (state.ukey[state.index]) )/UINT32_MAX;
+    u = OutFunction<BackendT>(state);
     
     //state index and increase counter
     ++(state.index);
@@ -389,7 +415,7 @@ typename ReturnTypeBackendT::Double_v Philox<BackendT>::Kernel(State_t& state)
   }
   else {  
     //    u = (Double_v)(state.ukey[state.index] >>11 ) * a + b;
-    u = static_cast<Double_v>( (state.ukey[state.index]) )/UINT32_MAX; 
+    u = OutFunction<BackendT>(state);
     ++state.index;
     if(state.index == 4) state.index = 0;
   }

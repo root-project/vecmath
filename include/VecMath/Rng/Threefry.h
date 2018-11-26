@@ -146,6 +146,12 @@ private:
   VECCORE_FORCE_INLINE 
   void SetNextSubstream ();
 
+  // Output function                                                                                  
+  template <typename ReturnTypeBackendT>
+  VECCORE_ATT_HOST_DEVICE 
+  VECCORE_FORCE_INLINE
+  typename ReturnTypeBackendT::Double_v OutFunction(State_t& state);
+
   // Increase counter
   VECCORE_ATT_HOST_DEVICE 
   VECCORE_FORCE_INLINE
@@ -382,14 +388,33 @@ void Threefry<ScalarBackend>::AdvanceState(long long n)
   if(++(this->fState->ctr[2])) return;
   ++(this->fState->ctr[3]);
 }
-  
+
+// output function 
+template <class BackendT>
+template <class ReturnTypeBackendT>
+VECCORE_ATT_HOST_DEVICE 
+typename ReturnTypeBackendT::Double_v Threefry<BackendT>::OutFunction(State_t& state)
+{
+  using Double_v = typename ReturnTypeBackendT::Double_v;
+  return simd_cast<Double_v>( (state.ukey[state.index]) )/UINT32_MAX;
+}
+
+// output function - specialization for the scalar backend
+template <>
+template <>
+VECCORE_FORCE_INLINE
+VECCORE_ATT_HOST_DEVICE double 
+Threefry<ScalarBackend>::OutFunction<ScalarBackend>(State_s& state)
+{
+  return static_cast<double>( (state.ukey[state.index]) )/UINT32_MAX;
+}
+
 // Kernel to generate a vector(scalar) of next random number(s) 
 template <class BackendT>
 template <class ReturnTypeBackendT>
 VECCORE_ATT_HOST_DEVICE 
 typename ReturnTypeBackendT::Double_v Threefry<BackendT>::Kernel(State_t& state)
 {
-
   using Double_v = typename ReturnTypeBackendT::Double_v;
   Double_v u(0.0);
 
@@ -397,15 +422,14 @@ typename ReturnTypeBackendT::Double_v Threefry<BackendT>::Kernel(State_t& state)
     //get a new state and generate 128 bits of pseudo randomness 
     Gen(state.ctr,state.key,state.ukey);
 
-    //construct 8xUInt32 (ukey) to 4xUInt64, then convert to Double_v using UINT64_MAX
-    u = static_cast<Double_v>( (state.ukey[state.index]) )/UINT32_MAX;
-    
+    u = OutFunction<BackendT>(state);
+
     //state index and increase counter
     ++(state.index);
     IncreaseCounter(&state);
   }
   else {  
-    u = static_cast<Double_v>( (state.ukey[state.index]) )/UINT32_MAX; 
+    u = OutFunction<BackendT>(state);
     ++state.index;
     if(state.index == 4) state.index = 0;
   }
