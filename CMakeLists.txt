@@ -41,8 +41,8 @@ ExternalProject_Add(vdt
 
         INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/install
         INSTALL_COMMAND ${CMAKE_COMMAND} --build . --target install
-        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecMath/Private/vdt
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/install/include/vdt ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecMath/Private/vdt
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/vdt
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/install/include/vdt ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/vdt
 	)
   "
   )
@@ -57,8 +57,8 @@ ExternalProject_Add(vdt
   target_include_directories(VecMath INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include>)
 
   #installation configuration
-  #Install vdt headers(without shared lib) to $INSTALL_DESTINATION/include/VecMath/Private/vdt/*.h when VecMath is installed
-  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecMath/Private DESTINATION include/VecMath FILES_MATCHING PATTERN "*.h")
+  #Install vdt headers(without shared lib) to $INSTALL_DESTINATION/include/vdt/*.h when VecMath is installed
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/ DESTINATION include FILES_MATCHING PATTERN "*.h")
 
 endif()
 

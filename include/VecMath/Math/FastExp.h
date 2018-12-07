@@ -1,7 +1,7 @@
 #ifndef VECMATH_MATH_FASTEXP_H
 #define VECMATH_MATH_FASTEXP_H
 
-#include "VecMath/Private/vdt/exp.h"
+#include "vdt/exp.h"
 #include <VecCore/VecCore>
 
 namespace vecMath {
