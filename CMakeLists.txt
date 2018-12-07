@@ -13,6 +13,8 @@ endif()
 
 project(VecMath VERSION 0.1.0)
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${PROJECT_SOURCE_DIR}/cmake/modules)
+
 add_library(VecMath INTERFACE)
 target_include_directories(VecMath INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include> $<INSTALL_INTERFACE:include>)
 
@@ -20,10 +22,15 @@ target_include_directories(VecMath INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_S
 find_package(VecCore ${VecCore_VERSION} REQUIRED COMPONENTS ${VecCore_BACKEND})
 target_link_libraries(VecMath INTERFACE VecCore::VecCore) 
 
+#Find vdt if available
+find_package(Vdt)
+if(VDT_FOUND)
+  include_directories(${VDT_INCLUDE_DIR})
+else()
 
-#GetVDT on cmake generation phase to prevent rebuilding when using this lib from inside your project
-file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/)
-file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/CMakeLists.txt
+  #GetVDT on cmake generation phase to prevent rebuilding when using this lib from inside your project
+  file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/)
+  file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/CMakeLists.txt
   "
 cmake_minimum_required(VERSION 3.6.0)
 include(ExternalProject)
@@ -37,21 +44,24 @@ ExternalProject_Add(vdt
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecMath/Private/vdt
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/install/include/vdt ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecMath/Private/vdt
 	)
-")
-execute_process(COMMAND ${CMAKE_COMMAND} . -G ${CMAKE_GENERATOR}
+  "
+  )
+  execute_process(COMMAND ${CMAKE_COMMAND} . -G ${CMAKE_GENERATOR}
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/)
-execute_process(COMMAND ${CMAKE_COMMAND} --build .
+  execute_process(COMMAND ${CMAKE_COMMAND} --build .
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/)
-execute_process(COMMAND ${CMAKE_COMMAND} --build . --target install
+  execute_process(COMMAND ${CMAKE_COMMAND} --build . --target install
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/)
 
-#when building include vdt from downloaded repo
-target_include_directories(VecMath INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include>)
+  #when building include vdt from downloaded repo
+  target_include_directories(VecMath INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include>)
 
+  #installation configuration
+  #Install vdt headers(without shared lib) to $INSTALL_DESTINATION/include/VecMath/Private/vdt/*.h when VecMath is installed
+  install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecMath/Private DESTINATION include/VecMath FILES_MATCHING PATTERN "*.h")
 
-#installation configuration
-#Install vdt headers(without shared lib) to $INSTALL_DESTINATION/include/VecMath/Private/vdt/*.h when VecMath is installed
-install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/builtin_vdt/include/VecMath/Private DESTINATION include/VecMath FILES_MATCHING PATTERN "*.h")
+endif()
+
 install(DIRECTORY include/ DESTINATION include)
 
 include(CMakePackageConfigHelpers)
