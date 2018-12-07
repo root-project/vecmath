@@ -1,7 +1,7 @@
 #ifndef VECMATH_MATH_FASTSINCOS_H
 #define VECMATH_MATH_FASTSINCOS_H
 
-#include "VecMath/Private/vdt/sincos.h"
+#include "vdt/sincos.h"
 #include <VecCore/VecCore>
 
 namespace vecMath {

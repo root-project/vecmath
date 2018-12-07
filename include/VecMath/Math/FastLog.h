@@ -1,7 +1,7 @@
 #ifndef VECMATH_MATH_FASTLOG_H
 #define VECMATH_MATH_FASTLOG_H
 
-#include "VecMath/Private/vdt/log.h"
+#include "vdt/log.h"
 #include <VecCore/VecCore>
 
 namespace vecMath {
