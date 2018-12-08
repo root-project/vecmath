@@ -20,7 +20,8 @@ include(${CMAKE_CURRENT_LIST_DIR}/VecMathTargets.cmake)
 
 #for old cmake support
 if(VecMath_FOUND)
-  set(VecMath_INCLUDE_DIRS ${VecMath_INCLUDE_DIR} ${VecCore_INCLUDE_DIRS})
+  set(VecMath_EXTERNAL_INCLUDES "@VecMath_EXTERNAL_INCLUDES@")
+  set(VecMath_INCLUDE_DIRS ${VecMath_EXTERNAL_INCLUDES} ${VecMath_INCLUDE_DIR} ${VecCore_INCLUDE_DIRS})
   set(VecMath_DEFINITIONS ${VecCore_DEFINITIONS})
   set(VecMath_LIBRARIES ${VecCore_LIBRARIES})
 endif()
