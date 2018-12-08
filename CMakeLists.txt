@@ -26,6 +26,7 @@ target_link_libraries(VecMath INTERFACE VecCore::VecCore)
 find_package(Vdt)
 if(VDT_FOUND)
   include_directories(${VDT_INCLUDE_DIR})
+  set(VecMath_EXTERNAL_INCLUDES "${VECGEOM_EXTERNAL_INCLUDES};${VDT_INCLUDE_DIR}")
 else()
 
   #GetVDT on cmake generation phase to prevent rebuilding when using this lib from inside your project
