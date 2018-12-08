@@ -21,9 +21,8 @@ template <typename DerivedT>
 class VecRNG {
 
 protected:
-  using State_t = typename RNG_traits<DerivedT>::State_t;
-
   // Use *this to access data members in the derived class
+  using State_t = typename RNG_traits<DerivedT>::State_t;
   State_t *fState;
 
 public:
@@ -89,46 +88,7 @@ public:
   VECCORE_ATT_HOST_DEVICE
   State_t* GetState() const { return fState; }
 
-  VECCORE_ATT_HOST_DEVICE
-  State_t const& GetStateRef() const { return *fState; }
-
   //Common methods
-
-  // Return Index_v<ypename BackendT::Double_v> of random index numbers in (min,max]
-  template <typename BackendT>
-  VECCORE_ATT_HOST_DEVICE
-  Index_v<typename BackendT::Double_v> 
-  UniformIndex(Index_v<typename BackendT::Double_v> min = 0,
-               Index_v<typename BackendT::Double_v> max = INT32_MAX)
-  { 
-    return min+(max-min)*static_cast<DerivedT *>(this)-> template Uniform<BackendT>(); 
-  }
-
-  //UniformIndex - specialization for scalar
-  VECCORE_ATT_HOST_DEVICE
-  Index_v<double> 
-  UniformIndex(Index_v<double> min = 0, Index_v<double> max = UINT64_MAX)
-  { 
-    return min+(max-min)*static_cast<DerivedT *>(this)-> template Uniform<ScalarBackend>();
-  }
-
-  // Return Index_v<ypename BackendT::Double_v> of random numbers in (min,max] with a state
-  template <typename BackendT>
-  VECCORE_ATT_HOST_DEVICE
-  Index_v<typename BackendT::Double_v>
-  UniformIndex(State_t *state, Index_v<typename BackendT::Double_v> min = 0,
-                               Index_v<typename BackendT::Double_v> max = INT32_MAX)
-  { 
-    return min+(max-min)*static_cast<DerivedT *>(this)-> template Uniform<BackendT>(state); 
-  }
-
-  //UniformIndex with a status - specialization for scalar
-  VECCORE_ATT_HOST_DEVICE
-  Index_v<double> 
-  UniformIndex(State_t *state, Index_v<double> min = 0, Index_v<double> max = UINT64_MAX)
-  { 
-    return min+(max-min)*static_cast<DerivedT *>(this)-> template Uniform<ScalarBackend>(state); 
-  }
 
   // Returns an array of random numbers of the type BackendT::Double_v
   template <typename BackendT>
@@ -173,16 +133,27 @@ public:
   typename BackendT::Double_v Gauss(State_t *state,
                                     typename BackendT::Double_v mean,
                                     typename BackendT::Double_v sigma);
+/////////////////////////////////////////////////////////////////////////
 
-  // @syj: add methods to generate other random distributions
-  // (Binomial, Chi-Square, Gamma, Poisson, Landau and etc)
+//Gamma
+
+//Gamma Vectorized
+template <typename BackendT>
+VECCORE_ATT_HOST_DEVICE
+typename BackendT::Double_v Gamma(typename BackendT::Double_v alpha,
+                                    typename BackendT::Double_v beta);
+
+//Gamma Scalar
+template <typename BackendT>
+VECCORE_ATT_HOST_DEVICE
+typename BackendT::Double_v GammaScalar(typename BackendT::Double_v alpha,
+                                   typename BackendT::Double_v beta);
+
 
 };
 
 // Implementation
-
 // Common Methods
-
 // Returns an array of random numbers of BackendT::Double_v
 template <typename DerivedT>
 template <typename BackendT>
@@ -200,8 +171,7 @@ VecRNG<DerivedT>::Array(const size_t nsize, typename BackendT::Double_v *array)
 template <typename DerivedT>
 template <typename BackendT>
 VECCORE_ATT_HOST_DEVICE typename BackendT::Double_v
-VecRNG<DerivedT>::Exp(typename BackendT::Double_v tau)
-{
+VecRNG<DerivedT>::Exp(typename BackendT::Double_v tau){
   using Double_v = typename BackendT::Double_v;
 
   Double_v u01 = static_cast<DerivedT *>(this)-> template Uniform<BackendT>();
@@ -213,17 +183,15 @@ VecRNG<DerivedT>::Exp(typename BackendT::Double_v tau)
 template <typename DerivedT>
 template <typename BackendT>
 VECCORE_ATT_HOST_DEVICE typename BackendT::Double_v
-VecRNG<DerivedT>::Exp(State_t *state, typename BackendT::Double_v tau)
-{
+VecRNG<DerivedT>::Exp(State_t *state, typename BackendT::Double_v tau){
   // Exp with a state
   using Double_v = typename BackendT::Double_v;
-
   Double_v u01 = static_cast<DerivedT *>(this)-> template Uniform<BackendT>(state);
   return -tau*math::Log(u01);
 }
-
-// Gaussian deviates
+//INclude Gamma and Gauss PDF's generators
 #include "Gauss.h"
+#include "Gamma.h"
 
 } // end namespace impl
 } // end namespace vecRng
