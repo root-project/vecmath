@@ -118,6 +118,11 @@ public:
   VECCORE_ATT_HOST_DEVICE
   State_s GetStateAt(unsigned int i);
 
+  //Set state index
+  VECCORE_FORCE_INLINE
+  VECCORE_ATT_HOST_DEVICE
+  void SetStateIndex(unsigned int idx) { this->fState->index = idx; }  
+
   // Auxiliary methods
   
   VECCORE_ATT_HOST
@@ -350,10 +355,11 @@ inline VECCORE_ATT_HOST void Threefry<ScalarBackend>::IncreaseCounter(State_s *s
 template <typename BackendT>
 VECCORE_ATT_HOST void Threefry<BackendT>::PrintState(State_t const &state) const
 {
-  std::cout << "index = " << state.index << std::endl;
-  for(size_t i = 0 ; i < 4 ; ++i) {
-    std::cout << "key[" << i << "] = " <<  this->state.key[i] << std::endl;
-  }
+  //format index key[4] ctr[4]
+  std::cout << state.index << " ";
+  for(size_t i = 0 ; i < 4 ; ++i) std::cout << state.key[i] << " ";
+  for(size_t i = 0 ; i < 4 ; ++i) std::cout << state.ctr[i] << " ";
+  std::cout << std::endl;
 }
 
 template <class BackendT>
@@ -421,7 +427,6 @@ typename ReturnTypeBackendT::Double_v Threefry<BackendT>::Kernel(State_t& state)
   if(state.index == 0 ) {
     //get a new state and generate 128 bits of pseudo randomness 
     Gen(state.ctr,state.key,state.ukey);
-
     u = OutFunction<BackendT>(state);
 
     //state index and increase counter
@@ -433,6 +438,7 @@ typename ReturnTypeBackendT::Double_v Threefry<BackendT>::Kernel(State_t& state)
     ++state.index;
     if(state.index == 4) state.index = 0;
   }
+
   return u;
 }
 
@@ -535,10 +541,13 @@ template <>
 VECCORE_FORCE_INLINE
 VECCORE_ATT_HOST_DEVICE
 void Threefry<VectorBackend>::SetStateAt(unsigned int i, State_s *state) {
+
+  //  this->fState->index = state->index; 
+  
   for(int j=0 ; j < 4 ; ++j) {
-    this->fState->ctr[j][i] = state->key[j];
+    this->fState->ctr[j][i] = state->ctr[j];
     this->fState->key[j][i] = state->key[j];
-    this->fState->ukey[j][i] = state->key[j];
+    this->fState->ukey[j][i] = state->ukey[j];
   }
 }
 
@@ -549,6 +558,8 @@ VECCORE_ATT_HOST_DEVICE
 Threefry<VectorBackend>::State_s Threefry<VectorBackend>::GetStateAt(unsigned int i) 
 { 
   State_s state;
+
+  //  state.index = this->fState->index;
 
   for(int j = 0 ; j < 4 ; ++j) {
     state.ctr[j]= this->fState->ctr[j][i];

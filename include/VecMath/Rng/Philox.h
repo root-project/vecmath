@@ -115,6 +115,11 @@ public:
   VECCORE_ATT_HOST_DEVICE
   State_s GetStateAt(unsigned int i);
 
+  //Set state index
+  VECCORE_FORCE_INLINE
+  VECCORE_ATT_HOST_DEVICE
+  void SetStateIndex(unsigned int idx) { this->fState->index = idx; }  
+
   // Auxiliary methods
 
   VECCORE_ATT_HOST
@@ -335,10 +340,11 @@ inline void Philox<ScalarBackend>::IncreaseCounter(State_s *state)
 template <typename BackendT>
 VECCORE_ATT_HOST void Philox<BackendT>::PrintState(State_t const& state) const
 {
-  std::cout << "index = " << state.index << std::endl;
-  for(size_t i = 0 ; i < 2 ; ++i) {
-    std::cout << "key[" << i << "] = " <<  state.key[i] << std::endl;
-  }
+  //format index key[2] ctr[4]
+  std::cout << state.index << " ";
+  for(size_t i = 0 ; i < 2 ; ++i) std::cout << state.key[i] << " ";
+  for(size_t i = 0 ; i < 4 ; ++i) std::cout << state.ctr[i] << " ";
+  std::cout << std::endl;
 }
 
 template <class BackendT>
@@ -549,8 +555,8 @@ void Philox<VectorBackend>::SetStateAt(unsigned int i, State_s *state) {
     this->fState->key[j][i] = state->key[j];
   }
   for(int j=0 ; j < 4 ; ++j) {
-    this->fState->ctr[j][i] = state->key[j];
-    this->fState->ukey[j][i] = state->key[j];
+    this->fState->ctr[j][i] = state->ctr[j];
+    this->fState->ukey[j][i] = state->ukey[j];
   }
 }
 
