@@ -9,6 +9,7 @@
 
 #include <array>
 #include <stdint.h>
+#include "RngDefs.h"
 
 namespace vecRng {
 inline namespace VECRNG_IMPL_NAMESPACE {
