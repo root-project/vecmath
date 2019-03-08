@@ -20,6 +20,6 @@ inline constexpr R IntPow(const R base, unsigned const exponent) {
                    : base * IntPow(base, (exponent - 1) / 2) *
                          IntPow(base, (exponent - 1) / 2);
 }
-}
+} // namespace vecMath
 
 #endif // VECMATH_MATH_FASTPOW_H

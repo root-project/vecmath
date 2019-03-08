@@ -31,6 +31,6 @@ template <typename R> inline R FastCos(R x) {
   FastSinCos(x, s, c);
   return c;
 }
-}
+} // namespace vecMath
 
 #endif // VECMATH_MATH_FASTSINCOS_H

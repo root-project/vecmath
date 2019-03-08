@@ -57,18 +57,14 @@ using UInt16_v = typename VectorBackend::UInt16_v;
 using UInt32_v = typename VectorBackend::UInt32_v;
 using UInt64_v = typename VectorBackend::UInt64_v;
 
-template <typename From, typename To>
-VECCORE_FORCE_INLINE
-VECCORE_ATT_HOST_DEVICE
-To Convert(const From& x)
-{
+template <typename From, typename To> VECCORE_FORCE_INLINE VECCORE_ATT_HOST_DEVICE To Convert(const From &x) {
   To result;
   for (size_t i = 0; i < VectorSize(x); ++i)
     Set(result, i, Get(x, i));
   return result;
 }
 
-}
+} // namespace vecrng
 
 #define RNGTEST_NAMESPACE ::vecrng
 
@@ -87,36 +83,26 @@ To Convert(const From& x)
 #define CLHEP vecrng // use CLHEP SystemOfUnits.h and PhysicalConstants.h
 
 #if defined(VECCORE_CUDA)
-#define RNGTEST_HOST_FORWARD_DECLARE(X)                                                                                \
-  namespace cxx {                                                                                                      \
-  X                                                                                                                    \
+#define RNGTEST_HOST_FORWARD_DECLARE(X)                                        \
+  namespace cxx {                                                              \
+  X                                                                            \
   }
 #define RNGTEST_DEVICE_FORWARD_DECLARE(X)
 #else
 // Not compiling with NVCC
 namespace vecrng {
-template <typename DataType>
-struct kCudaType;
+template <typename DataType> struct kCudaType;
 template <typename DataType>
 using CudaType_t = typename kCudaType<DataType>::type_t;
-template <>
-struct kCudaType<float> {
-  using type_t = float;
-};
-template <>
-struct kCudaType<double> {
-  using type_t = double;
-};
-template <>
-struct kCudaType<int> {
-  using type_t = int;
-};
-}
+template <> struct kCudaType<float> { using type_t = float; };
+template <> struct kCudaType<double> { using type_t = double; };
+template <> struct kCudaType<int> { using type_t = int; };
+} // namespace vecrng
 
 #define RNGTEST_HOST_FORWARD_DECLARE(X)
-#define RNGTEST_DEVICE_FORWARD_DECLARE(X)                                                                              \
-  namespace cuda {                                                                                                     \
-  X                                                                                                                    \
+#define RNGTEST_DEVICE_FORWARD_DECLARE(X)                                      \
+  namespace cuda {                                                             \
+  X                                                                            \
   }
 #endif
 

@@ -5,8 +5,8 @@
 
 namespace vecrng {
 
-enum PdfIndex { kNullRng = -1, kExp, kGauss, kNumberPdf};
-static const char *PdfName[kNumberPdf] = {"MRG32k3aExp","MRG32k3aNormal"};
+enum PdfIndex { kNullRng = -1, kExp, kGauss, kNumberPdf };
+static const char *PdfName[kNumberPdf] = {"MRG32k3aExp", "MRG32k3aNormal"};
 
 class PdfBenchmarker {
 

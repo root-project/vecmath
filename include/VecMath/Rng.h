@@ -6,4 +6,4 @@
 //#include "Rng/R123.h"
 //#include "Rng/Threefry.h"
 
-#endif //VECMATH_RNG_H
+#endif // VECMATH_RNG_H

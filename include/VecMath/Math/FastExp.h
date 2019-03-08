@@ -15,6 +15,6 @@ template <> inline double FastExp(double x) { return vdt::fast_exp(x); }
 #ifdef VECCORE_ENABLE_VC
 template <> inline Vc::double_v FastExp(Vc::double_v x) { return Vc::exp(x); }
 #endif
-}
+} // namespace vecMath
 
 #endif // VECMATH_MATH_FASTEXP_H

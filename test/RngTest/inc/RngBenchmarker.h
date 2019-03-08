@@ -9,8 +9,18 @@ enum RngIndex { kNullRng = -1, kMRG32k3a, kThreefry, kPhilox, kNumberRng };
 static const char *RngName[kNumberRng] = {"MRG32k3a", "Threefry", "Philox  "};
 
 #ifdef RNGTEST_MKL
-  enum VslIndex { kNullVsl = -1, kMRG32K3A, kMCG59, kMT17739, kSFMT17739, kGFSR250, kSOBOL32, kNumberVsl };
-  static const char *VslName[kNumberVsl] = {"MRG32K3A", "MCG59   ", "MT19937 ", "SMT19937","GFSR250 ","SOBOL32 "};
+enum VslIndex {
+  kNullVsl = -1,
+  kMRG32K3A,
+  kMCG59,
+  kMT17739,
+  kSFMT17739,
+  kGFSR250,
+  kSOBOL32,
+  kNumberVsl
+};
+static const char *VslName[kNumberVsl] = {"MRG32K3A", "MCG59   ", "MT19937 ",
+                                          "SMT19937", "GFSR250 ", "SOBOL32 "};
 #endif
 
 class RngBenchmarker {
@@ -44,7 +54,6 @@ private:
   int fNSample;
   unsigned fRepetition;
   int fVerbosity;
-
 };
 
 } // end namespace vecrng
