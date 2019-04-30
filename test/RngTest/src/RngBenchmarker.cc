@@ -1,7 +1,7 @@
 #include "RngBenchmarker.h"
 #include "RngBenchmarker_cpu.h"
 
-#include "VecCore/Timer.h"
+#include "Timer.h"
 
 namespace vecrng {
 
