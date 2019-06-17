@@ -14,7 +14,7 @@
 namespace vecRng {
 inline namespace VECRNG_IMPL_NAMESPACE {
 
-template <typename DerivedT> class RNG_traits;
+template <typename DerivedT> struct RNG_traits;
 
 template <typename DerivedT> class VecRNG {
 
