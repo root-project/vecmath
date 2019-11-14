@@ -180,7 +180,7 @@ VecRNG<DerivedT>::Gamma(typename BackendT::Double_v alpha,
     }
   } else {                  // gama not all > 1
     if (MaskEmpty(gtOne)) { // 0 < alpha < 1
-      Double_v gamma = Gamma<BackendT>(alpha + 1, beta);
+      gamma = Gamma<BackendT>(alpha + 1, beta);
       Double_v u = static_cast<DerivedT *>(this)->template Uniform<BackendT>();
       Double_v e = 1.0 / alpha;
       gamma *= math::Pow(u, e);
