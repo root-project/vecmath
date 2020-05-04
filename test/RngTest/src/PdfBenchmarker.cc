@@ -1,7 +1,7 @@
 #include "PdfBenchmarker.h"
 #include "PdfBenchmarker_cpu.h"
 
-#include "VecCore/Timer.h"
+#include "Timer.h"
 
 namespace vecrng {
 
